@@ -1,0 +1,41 @@
+{
+  "name": "nexustrack",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -H 0.0.0.0 -p 3002",
+    "build": "next build",
+    "start": "next start -p 3002",
+    "worker:gmail": "node scripts/gmail_cron_worker.js",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@google/genai": "^2.24.0",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/nodemailer": "^8.0.2",
+    "adm-zip": "^0.6.1",
+    "bcryptjs": "^3.0.3",
+    "exceljs": "^4.4.0",
+    "html2canvas": "^1.4.1",
+    "imap-simple": "^5.1.0",
+    "jspdf": "^4.2.1",
+    "lucide-react": "^1.47.0",
+    "mailparser": "^3.9.28",
+    "mongoose": "^9.10.1",
+    "next": "16.3.5",
+    "next-auth": "^5.0.0-beta.32",
+    "nodemailer": "^8.0.11",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "recharts": "^3.10.1",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.3.5",
+    "typescript": "^5"
+  }
+}
