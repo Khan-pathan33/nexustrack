@@ -220,7 +220,7 @@ export const mockTrainees: TraineeData[] = [
     department: 'Batch 3 Frontend',
     skills: ['HTML5', 'CSS3', 'DOM Manipulation', 'JavaScript Sets', 'Date Handling'],
     overallScore: 58, // 29/50 in Assessment-1
-    status: 'on-leave',
+    status: 'active',
     avatar: '👩‍💻',
     joinedDate: '2025-12-01',
   },
@@ -242,7 +242,7 @@ export const mockTrainees: TraineeData[] = [
     department: 'Batch 3 Frontend',
     skills: ['HTML5 Semantics', 'CSS Flexbox', 'JavaScript Arrays', 'Form Validations'],
     overallScore: 50, // 25/50 in Assessment-1
-    status: 'on-leave',
+    status: 'completed',
     avatar: '🧑‍💻',
     joinedDate: '2026-01-01',
   },
@@ -253,7 +253,7 @@ export const mockTrainees: TraineeData[] = [
     department: 'Batch 3 Frontend',
     skills: ['HTML5 Fieldset', 'CSS Styling', 'Array Operations', 'Duplicate Detection'],
     overallScore: 42, // 21/50 in Assessment-1
-    status: 'active',
+    status: 'completed',
     avatar: '👩‍💻',
     joinedDate: '2025-12-21',
   },
@@ -297,7 +297,7 @@ export const mockTrainees: TraineeData[] = [
     department: 'Batch 3 Frontend',
     skills: ['HTML5 Forms', 'CSS Layouts', 'Resume Layout', 'JavaScript Basics'],
     overallScore: 20, // 10/50 in Assessment-1
-    status: 'active',
+    status: 'completed',
     avatar: '👩‍💻',
     joinedDate: '2026-01-08',
   },
@@ -308,7 +308,7 @@ export const mockTrainees: TraineeData[] = [
     department: 'Batch 3 Frontend',
     skills: ['HTML5', 'Forms & Tables', 'CSS Basics', 'JavaScript Syntax'],
     overallScore: 16, // 8/50 in Assessment-1
-    status: 'active',
+    status: 'completed',
     avatar: '👨‍💻',
     joinedDate: '2025-12-22',
   },
@@ -330,7 +330,7 @@ export const mockTrainees: TraineeData[] = [
     department: 'Batch 3 Frontend',
     skills: ['HTML5 Forms', 'CSS Grid Areas', 'Nested Grid', 'Flexbox'],
     overallScore: 8, // 4/50 in Assessment-1
-    status: 'active',
+    status: 'completed',
     avatar: '👨‍💻',
     joinedDate: '2025-12-15',
   },
@@ -613,12 +613,14 @@ declare global {
   } | undefined;
 }
 
-// Reset store if legacy data (e.g. fewer than 11 trainees or fake scores) is detected
+// Reset store if legacy data (e.g. fewer than 11 trainees or Sana not active) is detected
 const isOutdatedStore =
   !globalThis.__nexusStore ||
   !globalThis.__nexusStore.trainees ||
   globalThis.__nexusStore.trainees.length < 11 ||
   globalThis.__nexusStore.trainees.some((t) => t.name === 'Ahmed Ali' || t.name === 'Alex Rivera' || t.name === 'Elena Rostova') ||
+  globalThis.__nexusStore.trainees.some((t) => t.name === 'Sana Sulthana' && t.status !== 'active') ||
+  globalThis.__nexusStore.trainees.some((t) => t.name === 'Chevva Vinay Kumar' && t.status === 'on-leave') ||
   globalThis.__nexusStore.assessments?.some((a) => a.score > 50);
 
 if (isOutdatedStore) {

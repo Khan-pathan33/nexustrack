@@ -57,7 +57,13 @@ export default function TraineeBatchManager({ trainees, onRefresh }: TraineeBatc
   const [newBatchTrack, setNewBatchTrack] = useState('Next.js 16, TypeScript, MongoDB, Cloud Workflows');
 
   const batches = [
-    { id: '3', name: 'Batch 3 — Core Frontend & React', track: 'HTML5, CSS Grid/Flexbox, React 19', count: 11, status: 'Active' },
+    {
+      id: '3',
+      name: 'Batch 3 — Core Frontend & React',
+      track: 'HTML5, CSS Grid/Flexbox, React 19',
+      count: trainees.filter(t => !t.department?.includes('Batch 4') && t.status === 'active').length || 6,
+      status: 'Active',
+    },
     { id: '4', name: 'Batch 4 — Web Development Foundation', track: 'Modern Web, Semantic HTML, Responsive UI', count: 9, status: 'Active' },
     { id: '5', name: 'Batch 5 — Full Stack & Cloud', track: 'Next.js 16, TypeScript, MongoDB, REST APIs', count: 4, status: 'Upcoming' },
   ];

@@ -6,7 +6,7 @@ let customBatches = [
     id: '3',
     name: 'Batch 3 — Core Frontend & React',
     track: 'HTML, CSS Grid/Flexbox, JavaScript, React 19',
-    traineeCount: 11,
+    traineeCount: 6,
     status: 'In Progress',
     startDate: '2025-12-01',
     lead: 'Pathan Nafisa Khanam',

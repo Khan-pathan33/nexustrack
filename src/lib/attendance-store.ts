@@ -76,6 +76,15 @@ You also appear to be away, and I have not received any leave request or prior c
 Clarify the reason for your absence and ensure that the daily login process is followed consistently going forward.`;
 }
 
+export const ACTIVE_BATCH_3_TRAINEES = [
+  'Althaf Syed',
+  'Bala Krishna Parimi',
+  'Chandra Shekar K',
+  'Girish C',
+  'Sana Sulthana',
+  'Tejaswar Rao',
+];
+
 /**
  * Retrieve or initialize attendance records for a given date
  */
@@ -85,19 +94,30 @@ export function getOrCreateAttendanceForDate(
 ): AttendanceRecord[] {
   const cacheKey = `${dateStr}_b${batchFilter}`;
 
+  if (attendanceCache[cacheKey]) {
+    // Invalidate stale cache if it contains outdated leave status or incorrect trainee count
+    const isStale =
+      attendanceCache[cacheKey].some(r => r.traineeName === 'Sana Sulthana' && r.status === 'on-leave') ||
+      (batchFilter === '3' && attendanceCache[cacheKey].length !== ACTIVE_BATCH_3_TRAINEES.length);
+    if (isStale) {
+      delete attendanceCache[cacheKey];
+    }
+  }
+
   if (!attendanceCache[cacheKey]) {
     // Collect all trainees for this cohort from in-memory store
     const cohortTrainees = store.trainees.filter(t => {
       if (batchFilter === 'all') return true;
-      if (batchFilter === '3') return !t.department?.includes('Batch 4');
+      if (batchFilter === '3') {
+        return ACTIVE_BATCH_3_TRAINEES.includes(t.name);
+      }
       return t.department?.includes(`Batch ${batchFilter}`);
     });
 
     // Provide authentic initial data with realistic morning punch timestamps
     const initialRecords: AttendanceRecord[] = cohortTrainees.map((t, idx) => {
-      // Create a few trainees who logged in on time, some in grace, and some absent/away
       if (idx === 0 || idx === 1) {
-        // On Time (e.g. 08:52 AM, 08:58 AM)
+        // On Time (08:52 AM, 08:55 AM)
         return {
           _id: genId(),
           traineeId: t._id,
@@ -105,7 +125,7 @@ export function getOrCreateAttendanceForDate(
           traineeEmail: t.email,
           batchNumber: batchFilter,
           date: dateStr,
-          loginTime: `08:5${2 + idx} AM`,
+          loginTime: `08:5${2 + idx * 3} AM`,
           logoutTime: '',
           status: 'on-time',
           goodMorningSent: true,
@@ -113,8 +133,8 @@ export function getOrCreateAttendanceForDate(
           minutesLate: 0,
           remarks: 'Logged in before 9:00 AM.',
         };
-      } else if (idx === 2) {
-        // Grace period (09:08 AM)
+      } else if (idx === 2 || idx === 3) {
+        // Grace period (09:05 AM, 09:08 AM)
         return {
           _id: genId(),
           traineeId: t._id,
@@ -122,33 +142,16 @@ export function getOrCreateAttendanceForDate(
           traineeEmail: t.email,
           batchNumber: batchFilter,
           date: dateStr,
-          loginTime: '09:08 AM',
+          loginTime: `09:0${5 + (idx - 2) * 3} AM`,
           logoutTime: '',
           status: 'grace-period',
           goodMorningSent: true,
           absenceNoticeSent: false,
-          minutesLate: 8,
-          remarks: 'Logged in within 15m grace period.',
-        };
-      } else if (idx === 3 && t.status === 'on-leave') {
-        // Approved leave
-        return {
-          _id: genId(),
-          traineeId: t._id,
-          traineeName: t.name,
-          traineeEmail: t.email,
-          batchNumber: batchFilter,
-          date: dateStr,
-          loginTime: '',
-          logoutTime: '',
-          status: 'on-leave',
-          goodMorningSent: false,
-          absenceNoticeSent: false,
-          minutesLate: 0,
-          remarks: 'Approved leave on record.',
+          minutesLate: 5 + (idx - 2) * 3,
+          remarks: 'Logged in within grace period.',
         };
       } else {
-        // Absent / Not Logged In (e.g. Nikhil, Girish, etc.)
+        // Absent / Pending Login (e.g. Sana Sulthana, Tejaswar Rao)
         return {
           _id: genId(),
           traineeId: t._id,
