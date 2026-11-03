@@ -3,11 +3,14 @@
 import React, { useState, useMemo } from 'react';
 import {
   Users, Plus, Search, Filter, Award, GitBranch, Edit, Trash2,
-  CheckCircle, Clock, AlertCircle, X, Shield, Sparkles, BookOpen, User
+  CheckCircle, Clock, AlertCircle, X, Shield, Sparkles, BookOpen, User, Mail
 } from 'lucide-react';
 import { useToast } from '@/components/Toast';
 import TraineeReportCardModal from '@/components/TraineeReportCardModal';
 import GithubCommitValidatorModal from '@/components/GithubCommitValidatorModal';
+import TraineeAttendanceRegister from '@/components/TraineeAttendanceRegister';
+import TraineeAbsenceNoticeModal from '@/components/TraineeAbsenceNoticeModal';
+
 
 export interface TraineeData {
   _id: string;
@@ -38,6 +41,8 @@ export default function TraineeBatchManager({ trainees, onRefresh }: TraineeBatc
   const [showAddBatchModal, setShowAddBatchModal] = useState(false);
   const [selectedTraineeForCard, setSelectedTraineeForCard] = useState<TraineeData | null>(null);
   const [selectedTraineeForGh, setSelectedTraineeForGh] = useState<{ username: string; repo: string } | null>(null);
+  const [selectedTraineeForNotice, setSelectedTraineeForNotice] = useState<any | null>(null);
+  const [activeSubTab, setActiveSubTab] = useState<'roster' | 'attendance'>('roster');
 
   // New trainee form state
   const [newName, setNewName] = useState('');
@@ -252,8 +257,87 @@ export default function TraineeBatchManager({ trainees, onRefresh }: TraineeBatc
         })}
       </div>
 
-      {/* Filter and Search Bar */}
+      {/* Sub-Tab Navigation: Roster vs 9:00 AM Attendance & Login/Logout Register */}
       <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: 12,
+          padding: '6px',
+          background: 'rgba(0, 0, 0, 0.25)',
+          borderRadius: 12,
+          border: '1px solid rgba(255, 255, 255, 0.08)',
+        }}
+      >
+        <div style={{ display: 'flex', gap: 6 }}>
+          <button
+            type="button"
+            onClick={() => setActiveSubTab('roster')}
+            style={{
+              padding: '8px 16px',
+              borderRadius: 8,
+              border: 'none',
+              background: activeSubTab === 'roster' ? 'linear-gradient(135deg, #0284c7, #0369a1)' : 'transparent',
+              color: activeSubTab === 'roster' ? '#ffffff' : '#94a3b8',
+              fontWeight: 700,
+              fontSize: 12,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+            }}
+          >
+            <Users size={14} />
+            <span>Trainee Cohort Roster ({filteredTrainees.length})</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveSubTab('attendance')}
+            style={{
+              padding: '8px 16px',
+              borderRadius: 8,
+              border: 'none',
+              background: activeSubTab === 'attendance' ? 'linear-gradient(135deg, #0284c7, #7c3aed)' : 'transparent',
+              color: activeSubTab === 'attendance' ? '#ffffff' : '#94a3b8',
+              fontWeight: 700,
+              fontSize: 12,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+            }}
+          >
+            <Clock size={14} />
+            <span>9:00 AM Attendance & Login/Logout Register</span>
+            <span
+              style={{
+                fontSize: 10,
+                padding: '2px 6px',
+                borderRadius: 4,
+                background: 'rgba(239, 68, 68, 0.25)',
+                color: '#f87171',
+                border: '1px solid rgba(239, 68, 68, 0.4)',
+              }}
+            >
+              Live Monitor
+            </span>
+          </button>
+        </div>
+
+        <div style={{ fontSize: 12, color: '#64748b', paddingRight: 8 }}>
+          Cohort: <strong>Batch {selectedBatch}</strong>
+        </div>
+      </div>
+
+      {activeSubTab === 'attendance' ? (
+        <TraineeAttendanceRegister batchNumber={selectedBatch} />
+      ) : (
+        <>
+          {/* Filter and Search Bar */}
+          <div
         style={{
           display: 'flex',
           gap: 12,
@@ -447,6 +531,24 @@ export default function TraineeBatchManager({ trainees, onRefresh }: TraineeBatc
                   <GitBranch size={13} color="#38bdf8" />
                   <span>GitHub</span>
                 </button>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setSelectedTraineeForNotice({
+                      traineeId: t._id,
+                      traineeName: t.name,
+                      traineeEmail: t.email,
+                      batchNumber: selectedBatch,
+                    })
+                  }
+                  className="btn btn-secondary btn-sm"
+                  style={{ fontSize: 11, gap: 5, padding: '5px 8px', color: '#f87171' }}
+                  title="Draft 9:00 AM Absence & Login Clarification Notice"
+                >
+                  <Mail size={12} color="#ef4444" />
+                  <span>Notice</span>
+                </button>
               </div>
 
               <button
@@ -468,6 +570,8 @@ export default function TraineeBatchManager({ trainees, onRefresh }: TraineeBatc
           </div>
         ))}
       </div>
+        </>
+      )}
 
       {/* Enroll Trainee Modal */}
       {showAddTraineeModal && (
@@ -657,6 +761,14 @@ export default function TraineeBatchManager({ trainees, onRefresh }: TraineeBatc
         onClose={() => setSelectedTraineeForGh(null)}
         defaultUsername={selectedTraineeForGh?.username || 'PathanNafisa'}
         defaultRepoName={selectedTraineeForGh?.repo || 'frontend-tracker'}
+      />
+
+      {/* 9:00 AM Absence & Login Notice Modal */}
+      <TraineeAbsenceNoticeModal
+        isOpen={Boolean(selectedTraineeForNotice)}
+        onClose={() => setSelectedTraineeForNotice(null)}
+        trainee={selectedTraineeForNotice}
+        onNoticeSent={onRefresh}
       />
     </div>
   );

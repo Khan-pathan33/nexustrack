@@ -6,7 +6,7 @@ import {
   ChevronLeft, ChevronRight, Copy, Download, ExternalLink, File,
   FileSpreadsheet, Folder, FolderOpen, Mail, Paperclip, Plus,
   RotateCcw, Save, Send, Shield, ShieldCheck, Sparkles, Trash,
-  Trash2, X, Zap, Bell, GitBranch
+  Trash2, X, Zap, Bell, GitBranch, Clock
 } from 'lucide-react';
 import ExportPdfButton from '@/components/ExportPdfButton';
 import { useToast } from '@/components/Toast';
@@ -18,6 +18,8 @@ import TLDailyReportModal from '@/components/TLDailyReportModal';
 import type { BatchTraineeRow } from '@/lib/generate-batch-report';
 import MissingTraineesModal from '@/components/MissingTraineesModal';
 import GithubCommitValidatorModal from '@/components/GithubCommitValidatorModal';
+import TraineeAbsenceNoticeModal from '@/components/TraineeAbsenceNoticeModal';
+
 
 
 export interface DailyTrackerData {
@@ -2462,8 +2464,10 @@ export default function DailyTrackerView({ trackers = [], onRefresh }: { tracker
   const [selectedEmailProvider, setSelectedEmailProvider] = useState<'gmail' | 'outlook' | 'both'>('gmail');
   const [showMissingModal, setShowMissingModal] = useState(false);
   const [selectedGhTrainee, setSelectedGhTrainee] = useState<{ username: string; repo: string } | null>(null);
+  const [selectedTraineeForAttendanceNotice, setSelectedTraineeForAttendanceNotice] = useState<any | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const tabsScrollRef = useRef<HTMLDivElement>(null);
+
 
 
   const activePresets = useMemo(() => {
@@ -3586,6 +3590,39 @@ export default function DailyTrackerView({ trackers = [], onRefresh }: { tracker
               <GitBranch size={13} />
               <span>GitHub Audit</span>
             </button>
+
+            {/* 9:00 AM Attendance & Absence Warning Button */}
+            <button
+              type="button"
+              onClick={() => {
+                const missing = editableRows.find(
+                  r => r.completedTopics !== 'Yes' && r.completedTopics !== 'Completed'
+                );
+                setSelectedTraineeForAttendanceNotice({
+                  traineeName: missing?.name || 'Nikhil',
+                  traineeEmail: (missing as any)?.email || `${(missing?.name || 'nikhil').toLowerCase().replace(/[^a-z0-9]/g, '.')}@nybinfotech.com`,
+                  batchNumber: selectedBatch,
+                });
+              }}
+              className="btn btn-sm"
+              style={{
+                fontSize: 12,
+                gap: 6,
+                background: 'rgba(239, 68, 68, 0.15)',
+                border: '1px solid rgba(239, 68, 68, 0.4)',
+                color: '#f87171',
+                fontWeight: 700,
+                padding: '7px 14px',
+                borderRadius: 8,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+              }}
+              title="Draft 9:00 AM Absence & Login Clarification Notice for trainees missing morning check-in"
+            >
+              <Clock size={13} />
+              <span>9:00 AM Absence Notice</span>
+            </button>
           </div>
         </div>
 
@@ -4608,8 +4645,34 @@ export default function DailyTrackerView({ trackers = [], onRefresh }: { tracker
                       {r.selfProjectStatus}
                     </td>
 
-                    {/* Action Column: Delete Row */}
+                    {/* Action Column: Notice & Delete */}
                     <td style={{ padding: '8px 6px', border: '1px solid #e2e8f0', textAlign: 'center' }}>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setSelectedTraineeForAttendanceNotice({
+                            traineeName: r.name,
+                            traineeEmail: (r as any).email || `${r.name.toLowerCase().replace(/[^a-z0-9]/g, '.')}@nybinfotech.com`,
+                            batchNumber: selectedBatch,
+                          })
+                        }
+                        title={`Draft 9:00 AM Absence & Login Clarification Notice for ${r.name}`}
+                        style={{
+                          background: 'transparent',
+                          border: 'none',
+                          cursor: 'pointer',
+                          color: '#f59e0b',
+                          padding: 4,
+                          borderRadius: 4,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          marginRight: 4,
+                        }}
+                      >
+                        <Clock size={13} />
+                      </button>
+
                       <button
                         type="button"
                         onClick={() => handleDeleteRow(r.sNo)}
@@ -5459,6 +5522,14 @@ export default function DailyTrackerView({ trackers = [], onRefresh }: { tracker
         defaultRepoName={selectedGhTrainee?.repo || 'nexus-trainee-frontend'}
         defaultDate={new Date().toISOString().split('T')[0]}
         syllabusTopic="CSS Flexbox, Grid, Responsive Dashboard, React Hooks"
+      />
+
+      {/* 9:00 AM Absence & Login Notice Modal */}
+      <TraineeAbsenceNoticeModal
+        isOpen={Boolean(selectedTraineeForAttendanceNotice)}
+        onClose={() => setSelectedTraineeForAttendanceNotice(null)}
+        trainee={selectedTraineeForAttendanceNotice}
+        date={selectedSheetDate}
       />
     </div>
   );
