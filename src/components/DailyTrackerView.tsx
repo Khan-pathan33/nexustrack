@@ -252,24 +252,8 @@ const SHAREPOINT_BATCH_3_TRAINEES: BatchTraineeRow[] = [
         standupRemarks: 'Good stand-up participation and full completion of the required scope.',
         selfProjectStatus: 'Employee Management System: fixed Reports page functionality and implemented role-based login.',
       },
-      {
-        sNo: 4,
-        name: 'Chevva Vinay Kumar',
-        pendingTopics: 'N/A',
-        completedTopics: 'Yes',
-        taskAssign: 'Yes',
-        doubts: 'Resolved - email sending was delayed by a corrupted attachment; the file was deleted and re-uploaded.',
-        discussionSummary: 'Completed React project setup with Vite, project structure, functional components, JSX syntax and rules, JavaScript expressions, Fragments, Strict Mode, reusable components, and the required Profile Page with Header, Profile, Skills, Education, and Footer. Also revised prior HTML/CSS layout concepts.',
-        githubPushStatus: 'Yes',
-        emailReviewStatus: 'Reviewed. Complete React scope; correct “harmed file” to “corrupted file,” “Java script” to “JavaScript,” and keep prior HTML/CSS revision separate from today’s React assignment.',
-        standupParticipation: 'Participated',
-        standupRating: 'Good',
-        standupRemarks: 'Good stand-up participation and full completion of the required React scope.',
-        selfProjectStatus: 'N/A',
-      },
-      {
-        sNo: 5,
-        name: 'Girish C',
+            {
+        sNo: 4, name: 'Girish C',
         pendingTopics: 'Pending: assigned React project exercises and Profile Page mini assignment were not reported as completed.',
         completedTopics: 'Partial - Completed React introduction, features, project structure/setup, functional components, JSX and rules, valid/invalid JSX, Fragments, Strict Mode, rendering, and function calls. Practical implementations remain unconfirmed.',
         taskAssign: 'Yes',
@@ -282,24 +266,8 @@ const SHAREPOINT_BATCH_3_TRAINEES: BatchTraineeRow[] = [
         standupRemarks: 'Good stand-up participation; complete or confirm the assigned exercises and Profile Page.',
         selfProjectStatus: 'N/A',
       },
-      {
-        sNo: 6,
-        name: 'Jayakrishna Madicharla',
-        pendingTopics: 'Pending: React Profile Page mini assignment was not reported as completed.',
-        completedTopics: 'Partial - Completed React project creation and structure, reusable functional components, JSX rules and expressions, Fragments, and Strict Mode. Profile Page remains unconfirmed.',
-        taskAssign: 'Yes',
-        doubts: 'No Blockers Reported',
-        discussionSummary: 'Created a React project using Vite and practiced project structure, functional components, JSX, expressions, Fragments, and Strict Mode. The required Profile Page was not reported.',
-        githubPushStatus: 'Yes',
-        emailReviewStatus: 'Reviewed. “No Pending Task” conflicts with the missing Profile Page mini assignment; report it explicitly.',
-        standupParticipation: 'Participated',
-        standupRating: 'Average',
-        standupRemarks: 'Stand-up participation was average; complete or confirm the React Profile Page.',
-        selfProjectStatus: 'N/A',
-      },
-      {
-        sNo: 7,
-        name: 'Sana Sulthana',
+            {
+        sNo: 5, name: 'Sana Sulthana',
         pendingTopics: 'N/A',
         completedTopics: 'Yes',
         taskAssign: 'Yes',
@@ -313,8 +281,7 @@ const SHAREPOINT_BATCH_3_TRAINEES: BatchTraineeRow[] = [
         selfProjectStatus: 'N/A',
       },
       {
-        sNo: 8,
-        name: 'Tejeswar Rao',
+        sNo: 6, name: 'Tejeswar Rao',
         pendingTopics: 'N/A',
         completedTopics: 'Yes',
         taskAssign: 'Yes',
@@ -405,24 +372,8 @@ export const BATCH_3_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
         "standupRemarks": "Consistent high performer.",
         "selfProjectStatus": "Employee Management System: worked on functional dashboard pages."
       },
-      {
-        "sNo": 4,
-        "name": "Chevva Vinay Kumar",
-        "pendingTopics": "N/A",
-        "completedTopics": "Yes - Completed React fundamentals, functional components, JSX, and Profile Page.",
-        "taskAssign": "Yes",
-        "doubts": "No Blockers Reported",
-        "discussionSummary": "Completed React project structure, functional components, JSX syntax, and React Profile Page practical.",
-        "githubPushStatus": "Yes",
-        "emailReviewStatus": "Reviewed. Clean component architecture and valid JSX.",
-        "standupParticipation": "Participated",
-        "standupRating": "Good",
-        "standupRemarks": "Good progress.",
-        "selfProjectStatus": "N/A"
-      },
-      {
-        "sNo": 5,
-        "name": "Girish C",
+            {
+        "sNo": 4, "name": "Girish C",
         "pendingTopics": "Pending: React Profile Page mini assignment.",
         "completedTopics": "Partial - Completed React setup, project structure, functional components, and basic JSX.",
         "taskAssign": "Yes",
@@ -435,24 +386,8 @@ export const BATCH_3_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
         "standupRemarks": "Active participation.",
         "selfProjectStatus": "N/A"
       },
-      {
-        "sNo": 6,
-        "name": "Jayakrishna Madicharla",
-        "pendingTopics": "Pending: Complete React Profile Page mini assignment.",
-        "completedTopics": "Partial - Completed React setup, functional components, and JSX practice.",
-        "taskAssign": "Yes",
-        "doubts": "No Blockers Reported",
-        "discussionSummary": "Completed React setup and functional components. Guided on Profile Page header and card components.",
-        "githubPushStatus": "Yes",
-        "emailReviewStatus": "Reviewed. Submit React Profile Page practical.",
-        "standupParticipation": "Participated",
-        "standupRating": "Average",
-        "standupRemarks": "Working on completion.",
-        "selfProjectStatus": "N/A"
-      },
-      {
-        "sNo": 7,
-        "name": "Sana Sulthana",
+            {
+        "sNo": 5, "name": "Sana Sulthana",
         "pendingTopics": "N/A",
         "completedTopics": "Yes - Completed all React fundamentals, functional components, JSX rules, and Profile Page.",
         "taskAssign": "Yes",
@@ -466,8 +401,7 @@ export const BATCH_3_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
         "selfProjectStatus": "N/A"
       },
       {
-        "sNo": 8,
-        "name": "Tejaswar Rao",
+        "sNo": 6, "name": "Tejaswar Rao",
         "pendingTopics": "N/A",
         "completedTopics": "Yes - Completed React fundamentals, functional components, JSX rules, and Profile Page.",
         "taskAssign": "Yes",
@@ -544,24 +478,8 @@ export const BATCH_3_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
         "standupRemarks": "Consistent high performer.",
         "selfProjectStatus": "Employee Management System: worked on functionality for seasonal pages."
       },
-      {
-        "sNo": 4,
-        "name": "Chevva Vinay Kumar",
-        "pendingTopics": "N/A",
-        "completedTopics": "Yes - Completed Flexbox container properties, alignment, CSS Grid columns, and responsive dashboard layout.",
-        "taskAssign": "Yes",
-        "doubts": "Resolved - email sending was delayed by a corrupted attachment; the file was deleted and re-uploaded.",
-        "discussionSummary": "Completed Flexbox container properties, alignment, CSS Grid columns, and responsive dashboard layout with header, sidebar, cards, main content, and table.",
-        "githubPushStatus": "Yes",
-        "emailReviewStatus": "Reviewed. Solid implementation; correct “harmed file” to “corrupted file.”",
-        "standupParticipation": "Participated",
-        "standupRating": "Good",
-        "standupRemarks": "Solid implementation.",
-        "selfProjectStatus": "N/A"
-      },
-      {
-        "sNo": 5,
-        "name": "Girish C",
+            {
+        "sNo": 4, "name": "Girish C",
         "pendingTopics": "Pending: Responsive dashboard layout practical.",
         "completedTopics": "Partial - Studied Flexbox and CSS Grid topics. Practiced repeat(), fr, and nested Grid.",
         "taskAssign": "Yes",
@@ -574,24 +492,8 @@ export const BATCH_3_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
         "standupRemarks": "Good progress.",
         "selfProjectStatus": "N/A"
       },
-      {
-        "sNo": 6,
-        "name": "Jayakrishna Madicharla",
-        "pendingTopics": "Pending: Complete responsive dashboard practical.",
-        "completedTopics": "Partial - Completed Flexbox and basic Grid exercises.",
-        "taskAssign": "Yes",
-        "doubts": "No Blockers Reported",
-        "discussionSummary": "Completed Flexbox and basic Grid exercises. Practiced flex containers and column sizing. Working on dashboard layout.",
-        "githubPushStatus": "Yes",
-        "emailReviewStatus": "Reviewed. Submit the responsive dashboard practical.",
-        "standupParticipation": "Participated",
-        "standupRating": "Average",
-        "standupRemarks": "Working on completion.",
-        "selfProjectStatus": "N/A"
-      },
-      {
-        "sNo": 7,
-        "name": "Sana Sulthana",
+            {
+        "sNo": 5, "name": "Sana Sulthana",
         "pendingTopics": "N/A",
         "completedTopics": "Yes - Completed all Flexbox and Grid concepts, layout exercises, cards, and full responsive dashboard layout.",
         "taskAssign": "Yes",
@@ -605,8 +507,7 @@ export const BATCH_3_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
         "selfProjectStatus": "N/A"
       },
       {
-        "sNo": 8,
-        "name": "Tejaswar Rao",
+        "sNo": 6, "name": "Tejaswar Rao",
         "pendingTopics": "N/A",
         "completedTopics": "Yes - Completed all Flexbox and Grid concepts, assigned layout tasks, responsive navigation, cards, multi-column Grid, Grid Areas, and the required responsive dashboard.",
         "taskAssign": "Yes",
@@ -685,24 +586,8 @@ export const BATCH_3_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
         "standupRemarks": "Good stand-up participation and full completion of the required scope.",
         "selfProjectStatus": "Employee Management System: fixed Reports page functionality and implemented role-based login."
       },
-      {
-        "sNo": 4,
-        "name": "Chevva Vinay Kumar",
-        "pendingTopics": "N/A",
-        "completedTopics": "Yes",
-        "taskAssign": "Yes",
-        "doubts": "Resolved - email sending was delayed by a corrupted attachment; the file was deleted and re-uploaded.",
-        "discussionSummary": "Completed React project setup with Vite, project structure, functional components, JSX syntax and rules, JavaScript expressions, Fragments, Strict Mode, reusable components, and the required Profile Page with Header, Profile, Skills, Education, and Footer. Also revised prior HTML/CSS layout concepts.",
-        "githubPushStatus": "Yes",
-        "emailReviewStatus": "Reviewed. Complete React scope; correct “harmed file” to “corrupted file,” “Java script” to “JavaScript,” and keep prior HTML/CSS revision separate from today’s React assignment.",
-        "standupParticipation": "Participated",
-        "standupRating": "Good",
-        "standupRemarks": "Good stand-up participation and full completion of the required React scope.",
-        "selfProjectStatus": "N/A"
-      },
-      {
-        "sNo": 5,
-        "name": "Girish C",
+            {
+        "sNo": 4, "name": "Girish C",
         "pendingTopics": "Pending: assigned React project exercises and Profile Page mini assignment were not reported as completed.",
         "completedTopics": "Partial - Completed React introduction, features, project structure/setup, functional components, JSX and rules, valid/invalid JSX, Fragments, Strict Mode, rendering, and function calls. Practical implementations remain unconfirmed.",
         "taskAssign": "Yes",
@@ -715,24 +600,8 @@ export const BATCH_3_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
         "standupRemarks": "Good stand-up participation; complete or confirm the assigned exercises and Profile Page.",
         "selfProjectStatus": "N/A"
       },
-      {
-        "sNo": 6,
-        "name": "Jayakrishna Madicharla",
-        "pendingTopics": "Pending: React Profile Page mini assignment was not reported as completed.",
-        "completedTopics": "Partial - Completed React project creation and structure, reusable functional components, JSX rules and expressions, Fragments, and Strict Mode. Profile Page remains unconfirmed.",
-        "taskAssign": "Yes",
-        "doubts": "No Blockers Reported",
-        "discussionSummary": "Created a React project using Vite and practiced project structure, functional components, JSX, expressions, Fragments, and Strict Mode. The required Profile Page was not reported.",
-        "githubPushStatus": "Yes",
-        "emailReviewStatus": "Reviewed. “No Pending Task” conflicts with the missing Profile Page mini assignment; report it explicitly.",
-        "standupParticipation": "Participated",
-        "standupRating": "Average",
-        "standupRemarks": "Stand-up participation was average; complete or confirm the React Profile Page.",
-        "selfProjectStatus": "N/A"
-      },
-      {
-        "sNo": 7,
-        "name": "Sana Sulthana",
+            {
+        "sNo": 5, "name": "Sana Sulthana",
         "pendingTopics": "N/A",
         "completedTopics": "Yes",
         "taskAssign": "Yes",
@@ -746,8 +615,7 @@ export const BATCH_3_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
         "selfProjectStatus": "N/A"
       },
       {
-        "sNo": 8,
-        "name": "Tejaswar Rao",
+        "sNo": 6, "name": "Tejaswar Rao",
         "pendingTopics": "N/A",
         "completedTopics": "Yes",
         "taskAssign": "Yes",
@@ -826,24 +694,8 @@ export const BATCH_3_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
         "standupRemarks": "No stand-up call was conducted today.",
         "selfProjectStatus": "Employee Management System: fixed Admin/Manager role functionality and added Employee settings and dashboard pages."
       },
-      {
-        "sNo": 4,
-        "name": "Chevva Vinay Kumar",
-        "pendingTopics": "N/A",
-        "completedTopics": "Yes",
-        "taskAssign": "Yes",
-        "doubts": "No Blockers Reported",
-        "discussionSummary": "Completed all component communication topics and tasks, including Props, callbacks, useState, hierarchy, conditional rendering, and the Product Management UI with list, details, add, edit, delete, and conditional display.",
-        "githubPushStatus": "Yes",
-        "emailReviewStatus": "Reviewed. Complete React scope; correct “Usestate” to “useState,” “conditional rerendering” to “conditional rendering,” and keep prior CSS revision separate.",
-        "standupParticipation": "Not Conducted",
-        "standupRating": "N/A",
-        "standupRemarks": "No stand-up call was conducted today.",
-        "selfProjectStatus": "N/A"
-      },
-      {
-        "sNo": 5,
-        "name": "Girish C",
+            {
+        "sNo": 4, "name": "Girish C",
         "pendingTopics": "Pending: assigned component exercises and Product Management UI mini assignment were not reported as completed.",
         "completedTopics": "Partial - Completed Props, State, useState, parent/child components, communication, hierarchy, passing functions, shared data, and conditional rendering topics. Practical implementations remain unconfirmed.",
         "taskAssign": "Yes",
@@ -856,24 +708,8 @@ export const BATCH_3_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
         "standupRemarks": "No stand-up call was conducted today.",
         "selfProjectStatus": "N/A"
       },
-      {
-        "sNo": 6,
-        "name": "Jayakrishna Madicharla",
-        "pendingTopics": "Pending: Product Management UI mini assignment was not reported as completed.",
-        "completedTopics": "Partial - Completed parent/child components, Props, function props, callback communication, multi-level hierarchy, useState, interaction-based updates, shared data, and conditional rendering. Product Management UI remains unconfirmed.",
-        "taskAssign": "Yes",
-        "doubts": "No Blockers Reported",
-        "discussionSummary": "Completed all listed communication concepts and assigned exercises, but did not report the required Product Management UI.",
-        "githubPushStatus": "Yes",
-        "emailReviewStatus": "Reviewed. “No Pending Task” conflicts with the omitted Product Management UI; report the mini assignment explicitly.",
-        "standupParticipation": "Not Conducted",
-        "standupRating": "N/A",
-        "standupRemarks": "No stand-up call was conducted today.",
-        "selfProjectStatus": "N/A"
-      },
-      {
-        "sNo": 7,
-        "name": "Sana Sulthana",
+            {
+        "sNo": 5, "name": "Sana Sulthana",
         "pendingTopics": "Pending: Edit Product functionality and complete conditional product-information display were not reported.",
         "completedTopics": "Partial - Completed Props, State, useState, parent/child and callback communication, hierarchy, conditional rendering, and a Product Management UI with display, add, view, and delete. Edit functionality remains unconfirmed.",
         "taskAssign": "Yes",
@@ -887,8 +723,7 @@ export const BATCH_3_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
         "selfProjectStatus": "N/A"
       },
       {
-        "sNo": 8,
-        "name": "Tejaswar Rao",
+        "sNo": 6, "name": "Tejaswar Rao",
         "pendingTopics": "N/A",
         "completedTopics": "Yes",
         "taskAssign": "Yes",
@@ -966,24 +801,8 @@ export const BATCH_3_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
         "standupRemarks": "Consistent high performer.",
         "selfProjectStatus": "Employee Management System"
       },
-      {
-        "sNo": 4,
-        "name": "Chevva Vinay Kumar",
-        "pendingTopics": "N/A",
-        "completedTopics": "Yes",
-        "taskAssign": "Yes",
-        "doubts": "No Blockers Reported",
-        "discussionSummary": "Completed event handling, dynamic form fields, list rendering with proper keys, and useEffect lifecycle. Pushed to GitHub.",
-        "githubPushStatus": "Yes",
-        "emailReviewStatus": "Reviewed. Clean form state handling.",
-        "standupParticipation": "Conducted",
-        "standupRating": "Good",
-        "standupRemarks": "Solid implementation.",
-        "selfProjectStatus": "N/A"
-      },
-      {
-        "sNo": 5,
-        "name": "Girish C",
+            {
+        "sNo": 4, "name": "Girish C",
         "pendingTopics": "Pending: User Registration mini assignment code submission.",
         "completedTopics": "Partial - Completed forms and lists; useEffect practice in progress.",
         "taskAssign": "Yes",
@@ -996,24 +815,8 @@ export const BATCH_3_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
         "standupRemarks": "Good progress.",
         "selfProjectStatus": "N/A"
       },
-      {
-        "sNo": 6,
-        "name": "Jayakrishna Madicharla",
-        "pendingTopics": "Pending: Complete User Registration and User List app.",
-        "completedTopics": "Partial - Event handling completed; User Registration app pending.",
-        "taskAssign": "Yes",
-        "doubts": "No Blockers Reported",
-        "discussionSummary": "Completed controlled components and map() list rendering. Practicing useEffect dependency arrays.",
-        "githubPushStatus": "Yes",
-        "emailReviewStatus": "Reviewed. Focus on finishing User Registration app.",
-        "standupParticipation": "Conducted",
-        "standupRating": "Average",
-        "standupRemarks": "Guidance provided on state updates.",
-        "selfProjectStatus": "N/A"
-      },
-      {
-        "sNo": 7,
-        "name": "Sana Sulthana",
+            {
+        "sNo": 5, "name": "Sana Sulthana",
         "pendingTopics": "N/A",
         "completedTopics": "Yes",
         "taskAssign": "Yes",
@@ -1027,8 +830,7 @@ export const BATCH_3_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
         "selfProjectStatus": "N/A"
       },
       {
-        "sNo": 8,
-        "name": "Tejaswar Rao",
+        "sNo": 6, "name": "Tejaswar Rao",
         "pendingTopics": "N/A",
         "completedTopics": "Yes",
         "taskAssign": "Yes",
@@ -1106,24 +908,8 @@ export const BATCH_3_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
         "standupRemarks": "Consistent high performer.",
         "selfProjectStatus": "Employee Management System"
       },
-      {
-        "sNo": 4,
-        "name": "Chevva Vinay Kumar",
-        "pendingTopics": "N/A",
-        "completedTopics": "Yes",
-        "taskAssign": "Yes",
-        "doubts": "No Blockers Reported",
-        "discussionSummary": "Completed React API calls with Axios, loading spinners, error banners, search, and department filter. Code pushed to GitHub.",
-        "githubPushStatus": "Yes",
-        "emailReviewStatus": "Reviewed. Clean API service separation.",
-        "standupParticipation": "Conducted",
-        "standupRating": "Good",
-        "standupRemarks": "Solid implementation.",
-        "selfProjectStatus": "N/A"
-      },
-      {
-        "sNo": 5,
-        "name": "Girish C",
+            {
+        "sNo": 4, "name": "Girish C",
         "pendingTopics": "Pending: React User Management practical assignment submission.",
         "completedTopics": "Partial - GET API fetching completed; search filter in progress.",
         "taskAssign": "Yes",
@@ -1136,24 +922,8 @@ export const BATCH_3_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
         "standupRemarks": "Good progress.",
         "selfProjectStatus": "N/A"
       },
-      {
-        "sNo": 6,
-        "name": "Jayakrishna Madicharla",
-        "pendingTopics": "Pending: Implement PUT and DELETE API endpoints.",
-        "completedTopics": "Partial - GET request and display completed; edit/delete pending.",
-        "taskAssign": "Yes",
-        "doubts": "No Blockers Reported",
-        "discussionSummary": "Practiced fetch API and async/await with loading indicators. User Management app pending full CRUD integration.",
-        "githubPushStatus": "Yes",
-        "emailReviewStatus": "Reviewed. Connect edit and delete operations to the REST API.",
-        "standupParticipation": "Conducted",
-        "standupRating": "Average",
-        "standupRemarks": "Guidance provided on async/await.",
-        "selfProjectStatus": "N/A"
-      },
-      {
-        "sNo": 7,
-        "name": "Sana Sulthana",
+            {
+        "sNo": 5, "name": "Sana Sulthana",
         "pendingTopics": "N/A",
         "completedTopics": "Yes",
         "taskAssign": "Yes",
@@ -1167,8 +937,7 @@ export const BATCH_3_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
         "selfProjectStatus": "N/A"
       },
       {
-        "sNo": 8,
-        "name": "Tejaswar Rao",
+        "sNo": 6, "name": "Tejaswar Rao",
         "pendingTopics": "N/A",
         "completedTopics": "Yes",
         "taskAssign": "Yes",
@@ -1246,24 +1015,8 @@ export const BATCH_3_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
         "standupRemarks": "Consistent high performer.",
         "selfProjectStatus": "Employee Management System"
       },
-      {
-        "sNo": 4,
-        "name": "Chevva Vinay Kumar",
-        "pendingTopics": "N/A",
-        "completedTopics": "Yes",
-        "taskAssign": "Yes",
-        "doubts": "No Blockers Reported",
-        "discussionSummary": "Completed global state management with Context, custom useFetch hook, and full React Mini App with clean modular architecture.",
-        "githubPushStatus": "Yes",
-        "emailReviewStatus": "Reviewed. Solid component hierarchy and state design.",
-        "standupParticipation": "Conducted",
-        "standupRating": "Good",
-        "standupRemarks": "Solid implementation.",
-        "selfProjectStatus": "N/A"
-      },
-      {
-        "sNo": 5,
-        "name": "Girish C",
+            {
+        "sNo": 4, "name": "Girish C",
         "pendingTopics": "Pending: Capstone mini app verification.",
         "completedTopics": "Partial - Context API completed; capstone app submission in progress.",
         "taskAssign": "Yes",
@@ -1276,24 +1029,8 @@ export const BATCH_3_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
         "standupRemarks": "Good progress.",
         "selfProjectStatus": "N/A"
       },
-      {
-        "sNo": 6,
-        "name": "Jayakrishna Madicharla",
-        "pendingTopics": "N/A",
-        "completedTopics": "Yes",
-        "taskAssign": "Yes",
-        "doubts": "No Blockers Reported",
-        "discussionSummary": "Completed Context API practice and custom hooks. Integrating full CRUD API and Context into final React mini application.",
-        "githubPushStatus": "Yes",
-        "emailReviewStatus": "Reviewed. Proper weekly revision and code structure.",
-        "standupParticipation": "Conducted",
-        "standupRating": "Good",
-        "standupRemarks": "Proper code structure.",
-        "selfProjectStatus": "N/A"
-      },
-      {
-        "sNo": 7,
-        "name": "Sana Sulthana",
+            {
+        "sNo": 5, "name": "Sana Sulthana",
         "pendingTopics": "N/A",
         "completedTopics": "Yes",
         "taskAssign": "Yes",
@@ -1307,8 +1044,7 @@ export const BATCH_3_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
         "selfProjectStatus": "N/A"
       },
       {
-        "sNo": 8,
-        "name": "Tejaswar Rao",
+        "sNo": 6, "name": "Tejaswar Rao",
         "pendingTopics": "N/A",
         "completedTopics": "Yes",
         "taskAssign": "Yes",
@@ -1385,24 +1121,8 @@ export const BATCH_3_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
         "standupRemarks": "No stand-up call was conducted today.",
         "selfProjectStatus": "Employee Management System"
       },
-      {
-        "sNo": 4,
-        "name": "Chevva Vinay Kumar",
-        "pendingTopics": "N/A",
-        "completedTopics": "Yes",
-        "taskAssign": "Yes",
-        "doubts": "No Blockers Reported",
-        "discussionSummary": "Implemented reducer workflow and modular state management.",
-        "githubPushStatus": "Yes",
-        "emailReviewStatus": "Reviewed. Clean implementation.",
-        "standupParticipation": "Not Conducted",
-        "standupRating": "N/A",
-        "standupRemarks": "No stand-up call was conducted today.",
-        "selfProjectStatus": "N/A"
-      },
-      {
-        "sNo": 5,
-        "name": "Girish C",
+            {
+        "sNo": 4, "name": "Girish C",
         "pendingTopics": "N/A",
         "completedTopics": "Yes",
         "taskAssign": "Yes",
@@ -1415,24 +1135,8 @@ export const BATCH_3_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
         "standupRemarks": "No stand-up call was conducted today.",
         "selfProjectStatus": "N/A"
       },
-      {
-        "sNo": 6,
-        "name": "Jayakrishna Madicharla",
-        "pendingTopics": "Pending: Missing Email Subject Line.",
-        "completedTopics": "Partial - Completed state exercises.",
-        "taskAssign": "Yes",
-        "doubts": "No Blockers Reported",
-        "discussionSummary": "Completed assigned state and reducer tasks. Subject line omitted in email submission.",
-        "githubPushStatus": "Yes",
-        "emailReviewStatus": "Action Required: Missing Email Subject Line.",
-        "standupParticipation": "Not Conducted",
-        "standupRating": "N/A",
-        "standupRemarks": "No stand-up call was conducted today.",
-        "selfProjectStatus": "N/A"
-      },
-      {
-        "sNo": 7,
-        "name": "Sana Sulthana",
+            {
+        "sNo": 5, "name": "Sana Sulthana",
         "pendingTopics": "N/A",
         "completedTopics": "Yes",
         "taskAssign": "Yes",
@@ -1446,8 +1150,7 @@ export const BATCH_3_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
         "selfProjectStatus": "N/A"
       },
       {
-        "sNo": 8,
-        "name": "Tejaswar Rao",
+        "sNo": 6, "name": "Tejaswar Rao",
         "pendingTopics": "N/A",
         "completedTopics": "Yes",
         "taskAssign": "Yes",
@@ -1526,9 +1229,8 @@ export const BATCH_3_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
         "standupRemarks": "No stand-up call was conducted today.",
         "selfProjectStatus": "Employee Management System"
       },
-      {
-        "sNo": 4,
-        "name": "Chevva Vinay Kumar",
+            {
+        "sNo": 4, "name": "Girish C",
         "pendingTopics": "Awaiting today's report submission.",
         "completedTopics": "In Progress - Performance optimization syllabus.",
         "taskAssign": "Yes",
@@ -1541,39 +1243,8 @@ export const BATCH_3_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
         "standupRemarks": "No stand-up call was conducted today.",
         "selfProjectStatus": "N/A"
       },
-      {
-        "sNo": 5,
-        "name": "Girish C",
-        "pendingTopics": "Awaiting today's report submission.",
-        "completedTopics": "In Progress - Performance optimization syllabus.",
-        "taskAssign": "Yes",
-        "doubts": "No Blockers Reported",
-        "discussionSummary": "Working on React.memo and useCallback optimizations. Scheduled for evening submission.",
-        "githubPushStatus": "Pending",
-        "emailReviewStatus": "Pending evening email submission.",
-        "standupParticipation": "Not Conducted",
-        "standupRating": "N/A",
-        "standupRemarks": "No stand-up call was conducted today.",
-        "selfProjectStatus": "N/A"
-      },
-      {
-        "sNo": 6,
-        "name": "Jayakrishna Madicharla",
-        "pendingTopics": "Pending: Missing Email Subject Line.",
-        "completedTopics": "Partial - Submission reviewed with discrepancies flagged.",
-        "taskAssign": "Yes",
-        "doubts": "No Blockers Reported",
-        "discussionSummary": "Submitted daily performance exercises. Missing standard email subject line flagged for correction.",
-        "githubPushStatus": "Yes",
-        "emailReviewStatus": "Action Required: Missing Email Subject Line — Use standard format: \"Daily Status Report (DD-MM-YYYY)\" Reported to Nafisa Khanam.",
-        "standupParticipation": "Not Conducted",
-        "standupRating": "N/A",
-        "standupRemarks": "No stand-up call was conducted today.",
-        "selfProjectStatus": "N/A"
-      },
-      {
-        "sNo": 7,
-        "name": "Sana Sulthana",
+            {
+        "sNo": 5, "name": "Sana Sulthana",
         "pendingTopics": "Pending: Formatting error in Subject Line: Trailing underscore (\"_\").",
         "completedTopics": "Partial - Submission reviewed with discrepancies flagged.",
         "taskAssign": "Yes",
@@ -1587,8 +1258,7 @@ export const BATCH_3_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
         "selfProjectStatus": "N/A"
       },
       {
-        "sNo": 8,
-        "name": "Tejaswar Rao",
+        "sNo": 6, "name": "Tejaswar Rao",
         "pendingTopics": "Awaiting today's report submission.",
         "completedTopics": "In Progress - Performance optimization syllabus.",
         "taskAssign": "Yes",
@@ -1625,7 +1295,7 @@ export const BATCH_4_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
     "rows": [
       {
         "sNo": 1,
-        "name": "Trainee 1 (Batch 4)",
+        "name": "Adinarayana Meesala",
         "pendingTopics": "N/A",
         "completedTopics": "Yes",
         "taskAssign": "Yes",
@@ -1640,7 +1310,7 @@ export const BATCH_4_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
       },
       {
         "sNo": 2,
-        "name": "Trainee 2 (Batch 4)",
+        "name": "Adithya Ram",
         "pendingTopics": "N/A",
         "completedTopics": "Yes",
         "taskAssign": "Yes",
@@ -1655,7 +1325,7 @@ export const BATCH_4_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
       },
       {
         "sNo": 3,
-        "name": "Trainee 3 (Batch 4)",
+        "name": "Jose Amala Kishor",
         "pendingTopics": "N/A",
         "completedTopics": "Yes",
         "taskAssign": "Yes",
@@ -1670,7 +1340,7 @@ export const BATCH_4_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
       },
       {
         "sNo": 4,
-        "name": "Trainee 4 (Batch 4)",
+        "name": "Snehith Reddy Challa",
         "pendingTopics": "N/A",
         "completedTopics": "Yes",
         "taskAssign": "Yes",
@@ -1685,7 +1355,7 @@ export const BATCH_4_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
       },
       {
         "sNo": 5,
-        "name": "Trainee 5 (Batch 4)",
+        "name": "Sruthi Badavath",
         "pendingTopics": "N/A",
         "completedTopics": "Yes",
         "taskAssign": "Yes",
@@ -1700,7 +1370,7 @@ export const BATCH_4_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
       },
       {
         "sNo": 6,
-        "name": "Trainee 6 (Batch 4)",
+        "name": "Nikhil Kumar Kurapati",
         "pendingTopics": "N/A",
         "completedTopics": "Yes",
         "taskAssign": "Yes",
@@ -1715,22 +1385,7 @@ export const BATCH_4_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
       },
       {
         "sNo": 7,
-        "name": "Trainee 7 (Batch 4)",
-        "pendingTopics": "N/A",
-        "completedTopics": "Yes",
-        "taskAssign": "Yes",
-        "doubts": "No Blockers Reported",
-        "discussionSummary": "Completed Flexbox and CSS Grid layout exercises.",
-        "githubPushStatus": "Yes",
-        "emailReviewStatus": "Reviewed",
-        "standupParticipation": "Conducted",
-        "standupRating": "Good",
-        "standupRemarks": "Active participation.",
-        "selfProjectStatus": "N/A"
-      },
-      {
-        "sNo": 8,
-        "name": "Trainee 8 (Batch 4)",
+        "name": "Ramesh Kumar A",
         "pendingTopics": "N/A",
         "completedTopics": "Yes",
         "taskAssign": "Yes",
@@ -1766,7 +1421,7 @@ export const BATCH_4_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
     "rows": [
       {
         "sNo": 1,
-        "name": "Trainee 1 (Batch 4)",
+        "name": "Adinarayana Meesala",
         "pendingTopics": "N/A",
         "completedTopics": "Yes",
         "taskAssign": "Yes",
@@ -1781,7 +1436,7 @@ export const BATCH_4_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
       },
       {
         "sNo": 2,
-        "name": "Trainee 2 (Batch 4)",
+        "name": "Adithya Ram",
         "pendingTopics": "N/A",
         "completedTopics": "Yes",
         "taskAssign": "Yes",
@@ -1796,7 +1451,7 @@ export const BATCH_4_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
       },
       {
         "sNo": 3,
-        "name": "Trainee 3 (Batch 4)",
+        "name": "Jose Amala Kishor",
         "pendingTopics": "N/A",
         "completedTopics": "Yes",
         "taskAssign": "Yes",
@@ -1811,7 +1466,7 @@ export const BATCH_4_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
       },
       {
         "sNo": 4,
-        "name": "Trainee 4 (Batch 4)",
+        "name": "Snehith Reddy Challa",
         "pendingTopics": "N/A",
         "completedTopics": "Yes",
         "taskAssign": "Yes",
@@ -1826,7 +1481,7 @@ export const BATCH_4_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
       },
       {
         "sNo": 5,
-        "name": "Trainee 5 (Batch 4)",
+        "name": "Sruthi Badavath",
         "pendingTopics": "Pending: Profile Page",
         "completedTopics": "Partial - React fundamentals completed",
         "taskAssign": "Yes",
@@ -1841,7 +1496,7 @@ export const BATCH_4_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
       },
       {
         "sNo": 6,
-        "name": "Trainee 6 (Batch 4)",
+        "name": "Nikhil Kumar Kurapati",
         "pendingTopics": "N/A",
         "completedTopics": "Yes",
         "taskAssign": "Yes",
@@ -1856,22 +1511,7 @@ export const BATCH_4_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
       },
       {
         "sNo": 7,
-        "name": "Trainee 7 (Batch 4)",
-        "pendingTopics": "N/A",
-        "completedTopics": "Yes",
-        "taskAssign": "Yes",
-        "doubts": "No Blockers Reported",
-        "discussionSummary": "Completed React project setup and functional components.",
-        "githubPushStatus": "Yes",
-        "emailReviewStatus": "Reviewed",
-        "standupParticipation": "Conducted",
-        "standupRating": "Good",
-        "standupRemarks": "Active participation.",
-        "selfProjectStatus": "N/A"
-      },
-      {
-        "sNo": 8,
-        "name": "Trainee 8 (Batch 4)",
+        "name": "Ramesh Kumar A",
         "pendingTopics": "N/A",
         "completedTopics": "Yes",
         "taskAssign": "Yes",
@@ -1907,7 +1547,7 @@ export const BATCH_4_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
     "rows": [
       {
         "sNo": 1,
-        "name": "Trainee 1 (Batch 4)",
+        "name": "Adinarayana Meesala",
         "pendingTopics": "N/A",
         "completedTopics": "Yes",
         "taskAssign": "Yes",
@@ -1922,7 +1562,7 @@ export const BATCH_4_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
       },
       {
         "sNo": 2,
-        "name": "Trainee 2 (Batch 4)",
+        "name": "Adithya Ram",
         "pendingTopics": "N/A",
         "completedTopics": "Yes",
         "taskAssign": "Yes",
@@ -1937,7 +1577,7 @@ export const BATCH_4_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
       },
       {
         "sNo": 3,
-        "name": "Trainee 3 (Batch 4)",
+        "name": "Jose Amala Kishor",
         "pendingTopics": "N/A",
         "completedTopics": "Yes",
         "taskAssign": "Yes",
@@ -1952,7 +1592,7 @@ export const BATCH_4_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
       },
       {
         "sNo": 4,
-        "name": "Trainee 4 (Batch 4)",
+        "name": "Snehith Reddy Challa",
         "pendingTopics": "N/A",
         "completedTopics": "Yes",
         "taskAssign": "Yes",
@@ -1967,7 +1607,7 @@ export const BATCH_4_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
       },
       {
         "sNo": 5,
-        "name": "Trainee 5 (Batch 4)",
+        "name": "Sruthi Badavath",
         "pendingTopics": "Pending: Product UI",
         "completedTopics": "Partial - Props and State completed",
         "taskAssign": "Yes",
@@ -1982,7 +1622,7 @@ export const BATCH_4_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
       },
       {
         "sNo": 6,
-        "name": "Trainee 6 (Batch 4)",
+        "name": "Nikhil Kumar Kurapati",
         "pendingTopics": "N/A",
         "completedTopics": "Yes",
         "taskAssign": "Yes",
@@ -1997,22 +1637,7 @@ export const BATCH_4_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
       },
       {
         "sNo": 7,
-        "name": "Trainee 7 (Batch 4)",
-        "pendingTopics": "N/A",
-        "completedTopics": "Yes",
-        "taskAssign": "Yes",
-        "doubts": "No Blockers Reported",
-        "discussionSummary": "Completed Props, useState, and component hierarchy.",
-        "githubPushStatus": "Yes",
-        "emailReviewStatus": "Reviewed",
-        "standupParticipation": "Not Conducted",
-        "standupRating": "N/A",
-        "standupRemarks": "No stand-up conducted today.",
-        "selfProjectStatus": "N/A"
-      },
-      {
-        "sNo": 8,
-        "name": "Trainee 8 (Batch 4)",
+        "name": "Ramesh Kumar A",
         "pendingTopics": "N/A",
         "completedTopics": "Yes",
         "taskAssign": "Yes",
@@ -2047,7 +1672,7 @@ export const BATCH_4_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
     "rows": [
       {
         "sNo": 1,
-        "name": "Trainee 1 (Batch 4)",
+        "name": "Adinarayana Meesala",
         "pendingTopics": "N/A",
         "completedTopics": "Yes",
         "taskAssign": "Yes",
@@ -2062,7 +1687,7 @@ export const BATCH_4_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
       },
       {
         "sNo": 2,
-        "name": "Trainee 2 (Batch 4)",
+        "name": "Adithya Ram",
         "pendingTopics": "N/A",
         "completedTopics": "Yes",
         "taskAssign": "Yes",
@@ -2077,7 +1702,7 @@ export const BATCH_4_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
       },
       {
         "sNo": 3,
-        "name": "Trainee 3 (Batch 4)",
+        "name": "Jose Amala Kishor",
         "pendingTopics": "N/A",
         "completedTopics": "Yes",
         "taskAssign": "Yes",
@@ -2092,7 +1717,7 @@ export const BATCH_4_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
       },
       {
         "sNo": 4,
-        "name": "Trainee 4 (Batch 4)",
+        "name": "Snehith Reddy Challa",
         "pendingTopics": "N/A",
         "completedTopics": "Yes",
         "taskAssign": "Yes",
@@ -2107,7 +1732,7 @@ export const BATCH_4_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
       },
       {
         "sNo": 5,
-        "name": "Trainee 5 (Batch 4)",
+        "name": "Sruthi Badavath",
         "pendingTopics": "Pending: Product UI submission",
         "completedTopics": "Partial - Props and State completed",
         "taskAssign": "Yes",
@@ -2122,7 +1747,7 @@ export const BATCH_4_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
       },
       {
         "sNo": 6,
-        "name": "Trainee 6 (Batch 4)",
+        "name": "Nikhil Kumar Kurapati",
         "pendingTopics": "N/A",
         "completedTopics": "Yes",
         "taskAssign": "Yes",
@@ -2137,22 +1762,7 @@ export const BATCH_4_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
       },
       {
         "sNo": 7,
-        "name": "Trainee 7 (Batch 4)",
-        "pendingTopics": "N/A",
-        "completedTopics": "Yes",
-        "taskAssign": "Yes",
-        "doubts": "No Blockers Reported",
-        "discussionSummary": "Completed event handling, form controls, and dynamic list rendering with map().",
-        "githubPushStatus": "Yes",
-        "emailReviewStatus": "Reviewed",
-        "standupParticipation": "Conducted",
-        "standupRating": "Good",
-        "standupRemarks": "Active in session.",
-        "selfProjectStatus": "N/A"
-      },
-      {
-        "sNo": 8,
-        "name": "Trainee 8 (Batch 4)",
+        "name": "Ramesh Kumar A",
         "pendingTopics": "N/A",
         "completedTopics": "Yes",
         "taskAssign": "Yes",
@@ -2187,7 +1797,7 @@ export const BATCH_4_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
     "rows": [
       {
         "sNo": 1,
-        "name": "Trainee 1 (Batch 4)",
+        "name": "Adinarayana Meesala",
         "pendingTopics": "N/A",
         "completedTopics": "Yes",
         "taskAssign": "Yes",
@@ -2202,7 +1812,7 @@ export const BATCH_4_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
       },
       {
         "sNo": 2,
-        "name": "Trainee 2 (Batch 4)",
+        "name": "Adithya Ram",
         "pendingTopics": "N/A",
         "completedTopics": "Yes",
         "taskAssign": "Yes",
@@ -2217,7 +1827,7 @@ export const BATCH_4_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
       },
       {
         "sNo": 3,
-        "name": "Trainee 3 (Batch 4)",
+        "name": "Jose Amala Kishor",
         "pendingTopics": "N/A",
         "completedTopics": "Yes",
         "taskAssign": "Yes",
@@ -2232,7 +1842,7 @@ export const BATCH_4_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
       },
       {
         "sNo": 4,
-        "name": "Trainee 4 (Batch 4)",
+        "name": "Snehith Reddy Challa",
         "pendingTopics": "N/A",
         "completedTopics": "Yes",
         "taskAssign": "Yes",
@@ -2247,7 +1857,7 @@ export const BATCH_4_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
       },
       {
         "sNo": 5,
-        "name": "Trainee 5 (Batch 4)",
+        "name": "Sruthi Badavath",
         "pendingTopics": "N/A",
         "completedTopics": "Yes",
         "taskAssign": "Yes",
@@ -2262,7 +1872,7 @@ export const BATCH_4_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
       },
       {
         "sNo": 6,
-        "name": "Trainee 6 (Batch 4)",
+        "name": "Nikhil Kumar Kurapati",
         "pendingTopics": "N/A",
         "completedTopics": "Yes",
         "taskAssign": "Yes",
@@ -2277,22 +1887,7 @@ export const BATCH_4_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
       },
       {
         "sNo": 7,
-        "name": "Trainee 7 (Batch 4)",
-        "pendingTopics": "N/A",
-        "completedTopics": "Yes",
-        "taskAssign": "Yes",
-        "doubts": "No Blockers Reported",
-        "discussionSummary": "Completed REST API integration using Fetch API with loading and error states.",
-        "githubPushStatus": "Yes",
-        "emailReviewStatus": "Reviewed",
-        "standupParticipation": "Conducted",
-        "standupRating": "Good",
-        "standupRemarks": "Active in session.",
-        "selfProjectStatus": "N/A"
-      },
-      {
-        "sNo": 8,
-        "name": "Trainee 8 (Batch 4)",
+        "name": "Ramesh Kumar A",
         "pendingTopics": "N/A",
         "completedTopics": "Yes",
         "taskAssign": "Yes",
@@ -2327,7 +1922,7 @@ export const BATCH_4_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
     "rows": [
       {
         "sNo": 1,
-        "name": "Trainee 1 (Batch 4)",
+        "name": "Adinarayana Meesala",
         "pendingTopics": "N/A",
         "completedTopics": "Yes",
         "taskAssign": "Yes",
@@ -2342,7 +1937,7 @@ export const BATCH_4_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
       },
       {
         "sNo": 2,
-        "name": "Trainee 2 (Batch 4)",
+        "name": "Adithya Ram",
         "pendingTopics": "N/A",
         "completedTopics": "Yes",
         "taskAssign": "Yes",
@@ -2357,7 +1952,7 @@ export const BATCH_4_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
       },
       {
         "sNo": 3,
-        "name": "Trainee 3 (Batch 4)",
+        "name": "Jose Amala Kishor",
         "pendingTopics": "N/A",
         "completedTopics": "Yes",
         "taskAssign": "Yes",
@@ -2372,7 +1967,7 @@ export const BATCH_4_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
       },
       {
         "sNo": 4,
-        "name": "Trainee 4 (Batch 4)",
+        "name": "Snehith Reddy Challa",
         "pendingTopics": "N/A",
         "completedTopics": "Yes",
         "taskAssign": "Yes",
@@ -2387,7 +1982,7 @@ export const BATCH_4_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
       },
       {
         "sNo": 5,
-        "name": "Trainee 5 (Batch 4)",
+        "name": "Sruthi Badavath",
         "pendingTopics": "N/A",
         "completedTopics": "Yes",
         "taskAssign": "Yes",
@@ -2402,7 +1997,7 @@ export const BATCH_4_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
       },
       {
         "sNo": 6,
-        "name": "Trainee 6 (Batch 4)",
+        "name": "Nikhil Kumar Kurapati",
         "pendingTopics": "N/A",
         "completedTopics": "Yes",
         "taskAssign": "Yes",
@@ -2417,22 +2012,7 @@ export const BATCH_4_SHEET_PRESETS: Record<string, SheetPresetConfig> = {
       },
       {
         "sNo": 7,
-        "name": "Trainee 7 (Batch 4)",
-        "pendingTopics": "N/A",
-        "completedTopics": "Yes",
-        "taskAssign": "Yes",
-        "doubts": "No Blockers Reported",
-        "discussionSummary": "Completed Context API global state and custom hooks for capstone mini application.",
-        "githubPushStatus": "Yes",
-        "emailReviewStatus": "Reviewed",
-        "standupParticipation": "Conducted",
-        "standupRating": "Good",
-        "standupRemarks": "Active in session.",
-        "selfProjectStatus": "N/A"
-      },
-      {
-        "sNo": 8,
-        "name": "Trainee 8 (Batch 4)",
+        "name": "Ramesh Kumar A",
         "pendingTopics": "N/A",
         "completedTopics": "Yes",
         "taskAssign": "Yes",
@@ -2591,9 +2171,17 @@ export default function DailyTrackerView({ trackers = [], onRefresh }: { tracker
         }
       } catch (e) {}
     }
+    if (batch === '3') {
+      rowsToSet = rowsToSet
+        .filter((r: any) => !r.name.includes('Vinay') && !r.name.includes('Jayakrishna'))
+        .slice(0, 6)
+        .map((r: any, i: number) => ({ ...r, sNo: i + 1 }));
+    } else if (batch === '4') {
+      rowsToSet = rowsToSet.slice(0, 7).map((r: any, i: number) => ({ ...r, sNo: i + 1 }));
+    }
     setEditableRows(rowsToSet);
     setHasUnsavedChanges(false);
-    toastSuccess(`Batch ${batch} Active`, `Switched to Batch ${batch} operations tracker.`);
+    toastSuccess(`Batch ${batch} Active`, `Switched to Batch ${batch} operations tracker (${rowsToSet.length} trainees).`);
   };
 
   const handleSelectSheet = (sheetKey: string) => {
@@ -2611,14 +2199,22 @@ export default function DailyTrackerView({ trackers = [], onRefresh }: { tracker
           if (saved) {
             const parsed = JSON.parse(saved);
             if (Array.isArray(parsed) && parsed.length > 0) {
-              rowsToSet = sheetKey === '05-10-2026' ? parsed.slice(0, 8).map((r: BatchTraineeRow, i: number) => ({ ...r, sNo: i + 1 })) : parsed;
+              rowsToSet = parsed;
             }
           }
         } catch (e) {}
       }
+      if (selectedBatch === '3') {
+        rowsToSet = rowsToSet
+          .filter((r: any) => !r.name.includes('Vinay') && !r.name.includes('Jayakrishna'))
+          .slice(0, 6)
+          .map((r: BatchTraineeRow, i: number) => ({ ...r, sNo: i + 1 }));
+      } else if (selectedBatch === '4') {
+        rowsToSet = rowsToSet.slice(0, 7).map((r: BatchTraineeRow, i: number) => ({ ...r, sNo: i + 1 }));
+      }
       setEditableRows(rowsToSet);
       setHasUnsavedChanges(false);
-      toastInfo('Sheet Active', `Loaded Batch ${selectedBatch} "${presets[sheetKey].name}" sheet.`);
+      toastInfo('Sheet Active', `Loaded Batch ${selectedBatch} "${presets[sheetKey].name}" sheet (${rowsToSet.length} trainees).`);
     } else if (uploadedWorkbook && uploadedWorkbook.sheets[sheetKey]) {
       toastSuccess('Uploaded Sheet Active', `Displaying sheet "${sheetKey}" from "${uploadedWorkbook.filename}".`);
     }
@@ -2658,31 +2254,68 @@ export default function DailyTrackerView({ trackers = [], onRefresh }: { tracker
   const [autoScanCountdown, setAutoScanCountdown] = useState(60);
   const [lastAutoScanTime, setLastAutoScanTime] = useState<string | null>(null);
 
-  // Live Editable SharePoint Rows (Persisted per-sheet to localStorage so mentor maintains Excel in real time)
+  // Live Editable SharePoint Rows (Strictly 6 trainees for Batch 3; 7 trainees for Batch 4)
   const [editableRows, setEditableRows] = useState<BatchTraineeRow[]>(() => {
     if (typeof window !== 'undefined') {
       try {
-        // Clear old legacy keys to prevent CSS data bleeding into React sheet
         localStorage.removeItem('nexus_batch3_tracker_rows_v3');
         localStorage.removeItem('nexus_batch3_tracker_rows');
-        // Clear all legacy non-October keys
         ['18-09-2026', '29-09-2026', '30-09-2026', 'Assessment-1', 'HTML-Curriculum', 'JavaScript-Curriculum'].forEach((k) => {
           localStorage.removeItem('nexus_batch3_sheet_' + k);
         });
-        const saved = localStorage.getItem('nexus_batch3_sheet_26-10-2026') || localStorage.getItem('nexus_batch3_sheet_16-10-2026') || localStorage.getItem('nexus_batch3_sheet_08-10-2026');
+        const saved =
+          localStorage.getItem('nexus_batch3_sheet_26-10-2026') ||
+          localStorage.getItem('nexus_batch3_sheet_16-10-2026') ||
+          localStorage.getItem('nexus_batch3_sheet_08-10-2026');
         if (saved) {
           const parsed = JSON.parse(saved);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            const trimmed = parsed.slice(0, 8).map((r: BatchTraineeRow, i: number) => ({ ...r, sNo: i + 1 }));
-            return trimmed;
+            const filtered = parsed
+              .filter((r: any) => !r.name.includes('Vinay') && !r.name.includes('Jayakrishna'))
+              .slice(0, 6)
+              .map((r: BatchTraineeRow, i: number) => ({ ...r, sNo: i + 1 }));
+            if (filtered.length === 6) return filtered;
           }
         }
       } catch (e) {
         console.warn('Could not read saved rows from localStorage:', e);
       }
     }
-    return BATCH_3_SHEET_PRESETS['26-10-2026']?.rows || BATCH_3_SHEET_PRESETS['16-10-2026']?.rows || BATCH_3_SHEET_PRESETS['08-10-2026']?.rows || SHAREPOINT_BATCH_3_TRAINEES;
+    return (
+      BATCH_3_SHEET_PRESETS['26-10-2026']?.rows.slice(0, 6) ||
+      BATCH_3_SHEET_PRESETS['16-10-2026']?.rows.slice(0, 6) ||
+      BATCH_3_SHEET_PRESETS['08-10-2026']?.rows.slice(0, 6) ||
+      SHAREPOINT_BATCH_3_TRAINEES.slice(0, 6)
+    );
   });
+
+  // Automatically prune old cached 8-trainee data to strictly 6 for Batch 3 and 7 for Batch 4
+  useEffect(() => {
+    if (selectedBatch === '3' && editableRows.length > 6) {
+      setEditableRows((prev) => {
+        const filtered = prev
+          .filter((r) => !r.name.includes('Vinay') && !r.name.includes('Jayakrishna'))
+          .slice(0, 6)
+          .map((r, i) => ({ ...r, sNo: i + 1 }));
+        if (typeof window !== 'undefined') {
+          try {
+            localStorage.setItem(`nexus_batch3_sheet_${selectedSheetDate}`, JSON.stringify(filtered));
+          } catch (e) {}
+        }
+        return filtered;
+      });
+    } else if (selectedBatch === '4' && editableRows.length > 7) {
+      setEditableRows((prev) => {
+        const filtered = prev.slice(0, 7).map((r, i) => ({ ...r, sNo: i + 1 }));
+        if (typeof window !== 'undefined') {
+          try {
+            localStorage.setItem(`nexus_batch4_sheet_${selectedSheetDate}`, JSON.stringify(filtered));
+          } catch (e) {}
+        }
+        return filtered;
+      });
+    }
+  }, [selectedBatch, selectedSheetDate, editableRows.length]);
 
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
