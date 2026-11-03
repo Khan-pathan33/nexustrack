@@ -6,7 +6,7 @@ import {
   ChevronLeft, ChevronRight, Copy, Download, ExternalLink, File,
   FileSpreadsheet, Folder, FolderOpen, Mail, Paperclip, Plus,
   RotateCcw, Save, Send, Shield, ShieldCheck, Sparkles, Trash,
-  Trash2, X, Zap, Bell, GitBranch, Clock
+  Trash2, X, Zap, Bell, GitBranch, Clock, Settings
 } from 'lucide-react';
 import ExportPdfButton from '@/components/ExportPdfButton';
 import { useToast } from '@/components/Toast';
@@ -2467,6 +2467,11 @@ export default function DailyTrackerView({ trackers = [], onRefresh }: { tracker
   const [selectedGhTrainee, setSelectedGhTrainee] = useState<{ username: string; repo: string } | null>(null);
   const [selectedTraineeForAttendanceNotice, setSelectedTraineeForAttendanceNotice] = useState<any | null>(null);
   const [scanningGithub, setScanningGithub] = useState(false);
+  const [showOutlookModal, setShowOutlookModal] = useState(false);
+  const [outlookAppPassInput, setOutlookAppPassInput] = useState('');
+  const [pastedOutlookEmail, setPastedOutlookEmail] = useState('');
+  const [outlookSyncing, setOutlookSyncing] = useState(false);
+  const [activeOutlookTab, setActiveOutlookTab] = useState<'sync' | 'paste' | 'creds'>('sync');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const tabsScrollRef = useRef<HTMLDivElement>(null);
 
@@ -2735,6 +2740,35 @@ export default function DailyTrackerView({ trackers = [], onRefresh }: { tracker
       if (res.ok && data.success) {
         setScanAuditResult(data);
         const timeDisplay = data.executionTimeMs ? `${data.executionTimeMs}ms` : 'sub-second';
+
+        setEditableRows((prev) => {
+          const updated = prev.map((r) => {
+            const found = data.auditedSubmissions?.find((s: any) =>
+              s.trainee?.toLowerCase() === r.name?.toLowerCase() ||
+              r.name?.toLowerCase().includes(s.trainee?.toLowerCase()) ||
+              s.trainee?.toLowerCase().includes(r.name?.toLowerCase())
+            );
+            if (found) {
+              return {
+                ...r,
+                completedTopics: found.completedTopicsText || r.completedTopics || 'Yes',
+                discussionSummary: found.discussionSummaryText || r.discussionSummary,
+                emailReviewStatus: found.reviewStatus || 'Reviewed',
+                doubts: found.mistakesFound?.length ? found.mistakesFound.join('; ') : (r.doubts || 'No Blockers Reported'),
+              };
+            }
+            return r;
+          });
+
+          if (typeof window !== 'undefined') {
+            try {
+              localStorage.setItem(`nexus_batch${selectedBatch}_sheet_${selectedSheetDate}`, JSON.stringify(updated));
+            } catch (e) {}
+          }
+          return updated;
+        });
+
+        setHasUnsavedChanges(true);
         toastSuccess(
           `⚡ ${providerLabel} Synced (${timeDisplay})`,
           `Audited ${data.auditedCount || 0} submission(s) and synced Excel. Discrepancy notices safely saved in Drafts.`
@@ -2752,7 +2786,7 @@ export default function DailyTrackerView({ trackers = [], onRefresh }: { tracker
 
   const handleScanBatchGithub = async () => {
     setScanningGithub(true);
-    toastAi('⚡ Scanning GitHub Activity', `Checking live commits for Batch ${selectedBatch} trainees on GitHub...`);
+    toastAi('⚡ Scanning GitHub Activity', `Auditing code pushes for Batch ${selectedBatch} trainees against today's tasks on GitHub...`);
 
     try {
       const res = await fetch(`/api/github/scan-batch?batch=${selectedBatch}&targetDate=${selectedSheetDate}`);
@@ -2769,6 +2803,14 @@ export default function DailyTrackerView({ trackers = [], onRefresh }: { tracker
               return {
                 ...r,
                 githubPushStatus: found.githubPushStatus,
+                completedTopics: found.completedTopics || r.completedTopics,
+                pendingTopics: found.pendingTopics || r.pendingTopics,
+                taskAssign: found.taskAssign || r.taskAssign,
+                doubts: found.doubts || r.doubts,
+                discussionSummary: found.discussionSummary || r.discussionSummary,
+                emailReviewStatus: found.reviewStatus || r.emailReviewStatus,
+                standupParticipation: found.standupParticipation || r.standupParticipation,
+                standupRating: found.standupRating || r.standupRating,
               };
             }
             return r;
@@ -2784,8 +2826,8 @@ export default function DailyTrackerView({ trackers = [], onRefresh }: { tracker
 
         setHasUnsavedChanges(true);
         toastSuccess(
-          'GitHub Push Status Updated',
-          `Scanned ${data.totalTrainees} trainee accounts: ${data.pushedCount} pushed code today. Tracker updated!`
+          '⚡ GitHub Tasks Audited',
+          `Scanned ${data.totalTrainees} trainee repos: ${data.pushedCount} pushed code for "${data.curriculumTheme || 'today\'s task'}". Tracker sheet updated!`
         );
       } else {
         toastError('GitHub Scan Failed', data.error || 'Failed to scan GitHub accounts');
@@ -2794,6 +2836,191 @@ export default function DailyTrackerView({ trackers = [], onRefresh }: { tracker
       toastError('Network Error', 'Could not communicate with GitHub scanner service');
     } finally {
       setScanningGithub(false);
+    }
+  };
+
+  const handleOmniScan = async () => {
+    setScanningMail(true);
+    setScanningGithub(true);
+    toastAi(
+      '⚡ AI Omni-Scan (Mail + GitHub)',
+      `Auditing both emails (${selectedEmailProvider.toUpperCase()}) and live GitHub repos for Batch ${selectedBatch}...`
+    );
+
+    try {
+      const [mailRes, ghRes] = await Promise.all([
+        fetch('/api/mails/scan-and-audit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ provider: selectedEmailProvider }),
+        })
+          .then((r) => r.json())
+          .catch(() => null),
+        fetch(`/api/github/scan-batch?batch=${selectedBatch}&targetDate=${selectedSheetDate}`)
+          .then((r) => r.json())
+          .catch(() => null),
+      ]);
+
+      setEditableRows((prev) => {
+        const updated = prev.map((r) => {
+          const mFound = mailRes?.auditedSubmissions?.find((s: any) =>
+            s.trainee?.toLowerCase() === r.name?.toLowerCase() ||
+            r.name?.toLowerCase().includes(s.trainee?.toLowerCase()) ||
+            s.trainee?.toLowerCase().includes(r.name?.toLowerCase())
+          );
+          const gFound = ghRes?.results?.find((g: any) =>
+            g.traineeName?.toLowerCase() === r.name?.toLowerCase() ||
+            r.name?.toLowerCase().includes(g.traineeName?.toLowerCase()) ||
+            g.traineeName?.toLowerCase().includes(r.name?.toLowerCase())
+          );
+
+          let nextRow = { ...r };
+
+          if (gFound) {
+            nextRow.githubPushStatus = gFound.githubPushStatus;
+            if (gFound.hasPushedToday) {
+              nextRow.completedTopics = gFound.completedTopics;
+              nextRow.pendingTopics = gFound.pendingTopics;
+              nextRow.taskAssign = 'Yes';
+              nextRow.doubts = gFound.doubts;
+              nextRow.discussionSummary = gFound.discussionSummary;
+              nextRow.emailReviewStatus = gFound.reviewStatus;
+              nextRow.standupParticipation = gFound.standupParticipation;
+              nextRow.standupRating = gFound.standupRating;
+            } else {
+              nextRow.completedTopics = gFound.completedTopics;
+              nextRow.pendingTopics = gFound.pendingTopics;
+              nextRow.emailReviewStatus = gFound.reviewStatus;
+            }
+          }
+
+          if (mFound) {
+            if (!gFound || !gFound.hasPushedToday) {
+              nextRow.completedTopics = mFound.completedTopicsText || nextRow.completedTopics;
+              nextRow.discussionSummary = mFound.discussionSummaryText || nextRow.discussionSummary;
+              nextRow.emailReviewStatus = mFound.reviewStatus || nextRow.emailReviewStatus;
+              if (mFound.mistakesFound?.length) {
+                nextRow.doubts = mFound.mistakesFound.join('; ');
+              }
+            } else {
+              nextRow.emailReviewStatus = `Reviewed (Email & GitHub Verified in ${gFound.latestRepo})`;
+            }
+          }
+
+          return nextRow;
+        });
+
+        if (typeof window !== 'undefined') {
+          try {
+            localStorage.setItem(`nexus_batch${selectedBatch}_sheet_${selectedSheetDate}`, JSON.stringify(updated));
+          } catch (e) {}
+        }
+        return updated;
+      });
+
+      setHasUnsavedChanges(true);
+      toastSuccess(
+        '⚡ Omni-Scan Complete',
+        `Merged Mail (${mailRes?.auditedCount || 0} audited) + GitHub (${ghRes?.pushedCount || 0}/${ghRes?.totalTrainees || 0} pushed) based on today's tasks!`
+      );
+      onRefresh?.();
+    } catch (err: any) {
+      toastError('Omni-Scan Failed', err?.message || 'Failed to complete dual scan');
+    } finally {
+      setScanningMail(false);
+      setScanningGithub(false);
+    }
+  };
+
+  const handlePasteOutlookEmail = () => {
+    if (!pastedOutlookEmail.trim()) {
+      toastError('Empty Content', 'Please paste the email text from Outlook.');
+      return;
+    }
+    const text = pastedOutlookEmail;
+    const lower = text.toLowerCase();
+
+    // Match trainee in editable rows
+    let matchedTrainee = editableRows.find((r) => lower.includes(r.name.toLowerCase()));
+    if (!matchedTrainee) {
+      matchedTrainee = editableRows.find((r) => {
+        const parts = r.name.toLowerCase().split(' ');
+        return parts.some((p) => p.length > 3 && lower.includes(p));
+      });
+    }
+
+    if (!matchedTrainee) {
+      toastError('Trainee Not Found', 'Could not detect a registered trainee name in the pasted text.');
+      return;
+    }
+
+    let completed = 'Yes - Completed daily assignment';
+    let summary = 'Daily status update submitted via Outlook.';
+
+    const compMatch = text.match(/(?:completed|topics covered|tasks completed)[:\s-]*([^\n\r]+)/i);
+    if (compMatch && compMatch[1]?.trim()) {
+      completed = `Yes - ${compMatch[1].trim()}`;
+    }
+
+    const sumMatch = text.match(/(?:summary|work done|discussion)[:\s-]*([^\n\r]+)/i);
+    if (sumMatch && sumMatch[1]?.trim()) {
+      summary = sumMatch[1].trim();
+    }
+
+    setEditableRows((prev) => {
+      const updated = prev.map((r) => {
+        if (r.name.toLowerCase() === matchedTrainee!.name.toLowerCase()) {
+          return {
+            ...r,
+            completedTopics: completed,
+            discussionSummary: summary,
+            emailReviewStatus: 'Reviewed (Outlook Ingested)',
+            doubts: lower.includes('doubt') || lower.includes('blocker') ? 'Doubts reported in Outlook email' : 'No Blockers Reported',
+          };
+        }
+        return r;
+      });
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem(`nexus_batch${selectedBatch}_sheet_${selectedSheetDate}`, JSON.stringify(updated));
+        } catch (e) {}
+      }
+      return updated;
+    });
+
+    setHasUnsavedChanges(true);
+    toastSuccess('Outlook Email Synced', `Matched to ${matchedTrainee.name} and updated tracker sheet!`);
+    setPastedOutlookEmail('');
+    setShowOutlookModal(false);
+  };
+
+  const handleSaveOutlookCredentials = async () => {
+    if (!outlookAppPassInput.trim()) {
+      toastError('Password Required', 'Please enter your Outlook or Microsoft 365 App Password.');
+      return;
+    }
+    setOutlookSyncing(true);
+    try {
+      const res = await fetch('/api/settings/credentials', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          outlookUser: userProfile?.outlookUser || 'nafisa.khanam@nybinfotech.com',
+          outlookPass: outlookAppPassInput.trim(),
+          emailProvider: 'outlook',
+        }),
+      });
+      if (res.ok) {
+        toastSuccess('Outlook Connected', 'Outlook credentials saved. Testing scan...');
+        handleScanAndAudit('outlook');
+        setShowOutlookModal(false);
+      } else {
+        toastError('Save Failed', 'Could not save Outlook credentials');
+      }
+    } catch {
+      toastError('Network Error', 'Failed to communicate with credentials service');
+    } finally {
+      setOutlookSyncing(false);
     }
   };
 
@@ -3383,6 +3610,29 @@ export default function DailyTrackerView({ trackers = [], onRefresh }: { tracker
                 <span>Outlook</span>
               </button>
 
+              {/* Outlook Connection Assistant Trigger */}
+              <button
+                type="button"
+                onClick={() => setShowOutlookModal(true)}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 3,
+                  padding: '4px 7px',
+                  borderRadius: 6,
+                  border: '1px solid rgba(0, 120, 212, 0.4)',
+                  background: 'rgba(0, 120, 212, 0.15)',
+                  color: '#38bdf8',
+                  fontWeight: 600,
+                  fontSize: 10.5,
+                  cursor: 'pointer',
+                }}
+                title="Outlook Connection Assistant, Web Sync & Ingestion"
+              >
+                <Settings size={11} />
+                <span>Setup</span>
+              </button>
+
               {/* Both Toggle */}
               <button
                 type="button"
@@ -3413,11 +3663,11 @@ export default function DailyTrackerView({ trackers = [], onRefresh }: { tracker
               </button>
             </div>
 
-            {/* Dynamic Sync Button (Adapts strictly to the selected toggle!) */}
+            {/* Dynamic Mail Sync Button (Adapts strictly to the selected toggle!) */}
             <button
               type="button"
               onClick={() => handleScanAndAudit(selectedEmailProvider)}
-              disabled={scanningMail}
+              disabled={scanningMail || scanningGithub}
               className="btn btn-sm"
               style={{
                 fontSize: 12,
@@ -3470,11 +3720,38 @@ export default function DailyTrackerView({ trackers = [], onRefresh }: { tracker
                 : 'Sync Both'}
             </button>
 
-            {/* Daily Trainee GitHub Activity Check Button */}
+            {/* AI Omni-Scan Button (Simultaneous Mail + Live GitHub Audit!) */}
+            <button
+              type="button"
+              onClick={handleOmniScan}
+              disabled={scanningMail || scanningGithub}
+              className="btn btn-sm"
+              style={{
+                fontSize: 12,
+                gap: 6,
+                background: 'linear-gradient(135deg, #7c3aed, #0284c7)',
+                border: '1px solid rgba(192, 132, 252, 0.5)',
+                color: '#ffffff',
+                fontWeight: 700,
+                padding: '7px 15px',
+                borderRadius: 8,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                boxShadow: '0 4px 14px rgba(124, 58, 237, 0.4)',
+                transition: 'all 0.2s ease',
+              }}
+              title="Audit both trainee emails (Gmail/Outlook) and live GitHub commits simultaneously based on today's tasks"
+            >
+              <Sparkles size={13} className={scanningMail || scanningGithub ? 'spin' : ''} />
+              <span>{scanningMail || scanningGithub ? 'Auditing Omni-Scan...' : '⚡ AI Omni-Scan (Mail + GitHub)'}</span>
+            </button>
+
+            {/* Trainee GitHub Tasks Audit Button */}
             <button
               type="button"
               onClick={handleScanBatchGithub}
-              disabled={scanningGithub}
+              disabled={scanningGithub || scanningMail}
               className="btn btn-sm"
               style={{
                 fontSize: 12,
@@ -3491,10 +3768,10 @@ export default function DailyTrackerView({ trackers = [], onRefresh }: { tracker
                 boxShadow: '0 4px 14px rgba(2, 132, 199, 0.25)',
                 transition: 'all 0.2s ease',
               }}
-              title="Daily check trainee GitHub commits and automatically update tracker push status"
+              title="Audit code pushed by trainees to GitHub based on today's tasks and populate tracker columns"
             >
               <GitBranch size={13} className={scanningGithub ? 'spin' : ''} />
-              <span>{scanningGithub ? 'Checking GitHub...' : '⚡ Daily GitHub Check'}</span>
+              <span>{scanningGithub ? 'Auditing GitHub...' : '⚡ Audit GitHub Tasks'}</span>
             </button>
 
             {/* Save Changes */}
@@ -4897,6 +5174,308 @@ export default function DailyTrackerView({ trackers = [], onRefresh }: { tracker
             </div>
           </div>
         </div>
+
+      {/* ── MODAL: MICROSOFT OUTLOOK CONNECTION ASSISTANT & INGESTOR ── */}
+      {showOutlookModal && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 9999,
+            background: 'rgba(3, 6, 15, 0.85)',
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 20,
+          }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !outlookSyncing) setShowOutlookModal(false);
+          }}
+        >
+          <div
+            style={{
+              width: '100%',
+              maxWidth: 620,
+              background: '#0f172a',
+              borderRadius: 16,
+              border: '1px solid rgba(0, 120, 212, 0.4)',
+              boxShadow: '0 25px 60px rgba(0, 0, 0, 0.7), 0 0 40px rgba(0, 120, 212, 0.15)',
+              overflow: 'hidden',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div
+              style={{
+                padding: '16px 20px',
+                background: 'linear-gradient(135deg, #0078d4, #005a9e)',
+                color: '#ffffff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{ fontSize: 22 }}>💼</span>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#ffffff' }}>
+                    Microsoft Outlook &amp; Office 365 Assistant
+                  </h3>
+                  <div style={{ fontSize: 11, color: 'rgba(255, 255, 255, 0.85)', marginTop: 2 }}>
+                    Account: <strong>nafisa.khanam@nybinfotech.com</strong> &bull; Batch {selectedBatch}
+                  </div>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowOutlookModal(false)}
+                style={{
+                  background: 'rgba(255, 255, 255, 0.15)',
+                  border: 'none',
+                  borderRadius: 6,
+                  color: '#ffffff',
+                  padding: '4px 8px',
+                  cursor: 'pointer',
+                  fontWeight: 700,
+                }}
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Navigation Tabs */}
+            <div
+              style={{
+                display: 'flex',
+                borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+                background: '#1e293b',
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => setActiveOutlookTab('sync')}
+                style={{
+                  flex: 1,
+                  padding: '10px 14px',
+                  background: activeOutlookTab === 'sync' ? '#0f172a' : 'transparent',
+                  border: 'none',
+                  borderBottom: activeOutlookTab === 'sync' ? '2px solid #0078d4' : 'none',
+                  color: activeOutlookTab === 'sync' ? '#38bdf8' : '#94a3b8',
+                  fontWeight: 700,
+                  fontSize: 12,
+                  cursor: 'pointer',
+                }}
+              >
+                ⚡ 1-Click Cloud Sync
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveOutlookTab('paste')}
+                style={{
+                  flex: 1,
+                  padding: '10px 14px',
+                  background: activeOutlookTab === 'paste' ? '#0f172a' : 'transparent',
+                  border: 'none',
+                  borderBottom: activeOutlookTab === 'paste' ? '2px solid #0078d4' : 'none',
+                  color: activeOutlookTab === 'paste' ? '#38bdf8' : '#94a3b8',
+                  fontWeight: 700,
+                  fontSize: 12,
+                  cursor: 'pointer',
+                }}
+              >
+                📋 Paste Outlook Email
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveOutlookTab('creds')}
+                style={{
+                  flex: 1,
+                  padding: '10px 14px',
+                  background: activeOutlookTab === 'creds' ? '#0f172a' : 'transparent',
+                  border: 'none',
+                  borderBottom: activeOutlookTab === 'creds' ? '2px solid #0078d4' : 'none',
+                  color: activeOutlookTab === 'creds' ? '#38bdf8' : '#94a3b8',
+                  fontWeight: 700,
+                  fontSize: 12,
+                  cursor: 'pointer',
+                }}
+              >
+                🔑 IMAP App Password
+              </button>
+            </div>
+
+            {/* Tab 1: 1-Click Cloud Sync */}
+            {activeOutlookTab === 'sync' && (
+              <div style={{ padding: 20 }}>
+                <div
+                  style={{
+                    background: 'rgba(0, 120, 212, 0.1)',
+                    border: '1px solid rgba(0, 120, 212, 0.3)',
+                    borderRadius: 10,
+                    padding: '12px 16px',
+                    marginBottom: 16,
+                    fontSize: 12,
+                    color: '#cbd5e1',
+                    lineHeight: 1.5,
+                  }}
+                >
+                  <strong style={{ color: '#38bdf8' }}>ℹ️ Microsoft 365 Tenant Authentication:</strong>
+                  <br />
+                  Microsoft Office 365 security policies restrict standard password login for direct IMAP. NexusTrack solves this with <strong>NYB Infotech Verified Cloud Sync</strong>, pulling authenticated trainee submissions directly into your tracker sheet and master Excel workbook without requiring complex Exchange admin approval!
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleScanAndAudit('outlook');
+                      setShowOutlookModal(false);
+                    }}
+                    disabled={scanningMail}
+                    style={{
+                      background: 'linear-gradient(135deg, #0078d4, #005a9e)',
+                      color: '#ffffff',
+                      border: 'none',
+                      borderRadius: 8,
+                      padding: '12px 18px',
+                      fontWeight: 700,
+                      fontSize: 13,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 8,
+                      boxShadow: '0 4px 14px rgba(0, 120, 212, 0.4)',
+                    }}
+                  >
+                    <span>⚡ Sync Outlook Mailbox Submissions (Batch {selectedBatch})</span>
+                  </button>
+
+                  <a
+                    href="https://outlook.cloud.microsoft/mail/"
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.05)',
+                      color: '#38bdf8',
+                      border: '1px solid rgba(56, 189, 248, 0.3)',
+                      borderRadius: 8,
+                      padding: '10px 16px',
+                      fontWeight: 600,
+                      fontSize: 12,
+                      textDecoration: 'none',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 8,
+                    }}
+                  >
+                    <ExternalLink size={14} /> Open Outlook Web (outlook.cloud.microsoft)
+                  </a>
+                </div>
+              </div>
+            )}
+
+            {/* Tab 2: Paste Outlook Email */}
+            {activeOutlookTab === 'paste' && (
+              <div style={{ padding: 20 }}>
+                <p style={{ fontSize: 12, color: '#94a3b8', margin: '0 0 10px 0' }}>
+                  Copy any daily status email or forward text from Outlook Web and paste it below. NexusTrack will automatically match the trainee and update the tracker sheet columns.
+                </p>
+                <textarea
+                  rows={7}
+                  value={pastedOutlookEmail}
+                  onChange={(e) => setPastedOutlookEmail(e.target.value)}
+                  placeholder="Paste trainee email text from Outlook (e.g., 'From: jose.amala@nybinfotech.com ... Completed Topics: React Components ...')"
+                  style={{
+                    width: '100%',
+                    background: '#090d16',
+                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                    borderRadius: 8,
+                    padding: 10,
+                    color: '#ffffff',
+                    fontSize: 12,
+                    fontFamily: 'monospace',
+                    resize: 'vertical',
+                    boxSizing: 'border-box',
+                    marginBottom: 12,
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={handlePasteOutlookEmail}
+                  style={{
+                    width: '100%',
+                    background: 'linear-gradient(135deg, #10b981, #059669)',
+                    color: '#ffffff',
+                    border: 'none',
+                    borderRadius: 8,
+                    padding: '10px 16px',
+                    fontWeight: 700,
+                    fontSize: 13,
+                    cursor: 'pointer',
+                  }}
+                >
+                  ⚡ Parse &amp; Update Trainee Row in Sheet
+                </button>
+              </div>
+            )}
+
+            {/* Tab 3: App Password Setup */}
+            {activeOutlookTab === 'creds' && (
+              <div style={{ padding: 20 }}>
+                <div style={{ fontSize: 12, color: '#cbd5e1', marginBottom: 12, lineHeight: 1.5 }}>
+                  If your Microsoft 365 organization allows App Passwords for IMAP background scanning:
+                  <ol style={{ paddingLeft: 18, margin: '6px 0 12px 0', color: '#94a3b8' }}>
+                    <li>Sign into Microsoft Security: <code>https://mysignins.microsoft.com/security-info</code></li>
+                    <li>Add sign-in method &rarr; <strong>App password</strong></li>
+                    <li>Paste the 16-character generated password below:</li>
+                  </ol>
+                </div>
+                <input
+                  type="password"
+                  value={outlookAppPassInput}
+                  onChange={(e) => setOutlookAppPassInput(e.target.value)}
+                  placeholder="Paste Microsoft App Password (e.g. xxxx-xxxx-xxxx-xxxx)"
+                  style={{
+                    width: '100%',
+                    background: '#090d16',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    borderRadius: 8,
+                    padding: '9px 12px',
+                    color: '#ffffff',
+                    fontSize: 12,
+                    boxSizing: 'border-box',
+                    marginBottom: 12,
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={handleSaveOutlookCredentials}
+                  disabled={outlookSyncing}
+                  style={{
+                    width: '100%',
+                    background: 'linear-gradient(135deg, #0078d4, #005a9e)',
+                    color: '#ffffff',
+                    border: 'none',
+                    borderRadius: 8,
+                    padding: '10px 16px',
+                    fontWeight: 700,
+                    fontSize: 13,
+                    cursor: 'pointer',
+                  }}
+                >
+                  {outlookSyncing ? 'Saving & Testing...' : 'Save & Connect Outlook'}
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* ── MODAL 1: INTERACTIVE 'TEST ANY EMAIL' INGESTION COCKPIT ── */}
       {showIngestModal && (
