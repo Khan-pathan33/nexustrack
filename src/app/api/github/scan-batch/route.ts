@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { BATCH_3_GITHUB_MAPPINGS, getTraineeGithubInfo } from '@/lib/trainee-github-map';
+import {
+  BATCH_3_GITHUB_MAPPINGS,
+  BATCH_4_GITHUB_MAPPINGS,
+  ALL_TRAINEE_GITHUB_MAPPINGS,
+  getTraineeGithubInfo,
+} from '@/lib/trainee-github-map';
 import { store } from '@/lib/mock-data';
 
 interface TraineeScanResult {
@@ -46,7 +51,13 @@ async function handleScan(req: NextRequest) {
     const nowIso = new Date().toISOString();
     const todayNorm = normalizeDate(nowIso);
 
-    const traineesToScan = Object.values(BATCH_3_GITHUB_MAPPINGS);
+    const traineesToScan =
+      batchQuery === '4'
+        ? Object.values(BATCH_4_GITHUB_MAPPINGS)
+        : batchQuery === 'all'
+        ? Object.values(ALL_TRAINEE_GITHUB_MAPPINGS)
+        : Object.values(BATCH_3_GITHUB_MAPPINGS);
+
     const results: TraineeScanResult[] = [];
 
     for (const trainee of traineesToScan) {
@@ -73,7 +84,12 @@ async function handleScan(req: NextRequest) {
           const events = await ghRes.json();
           if (Array.isArray(events)) {
             liveSuccess = true;
-            const pushEvents = events.filter((e: any) => e.type === 'PushEvent');
+            const pushEvents = events.filter(
+              (e: any) =>
+                e.type === 'PushEvent' ||
+                e.type === 'CreateEvent' ||
+                e.type === 'PullRequestEvent'
+            );
 
             if (pushEvents.length > 0) {
               const mostRecent = pushEvents[0];
@@ -81,12 +97,11 @@ async function handleScan(req: NextRequest) {
               latestRepo = mostRecent.repo?.name?.split('/')[1] || trainee.defaultRepo;
               const eventDateNorm = normalizeDate(latestPushDate);
 
-              // Match on specific target date OR if checking today/recent within 48h
+              // Match on specific target date OR if checking today/recent within past 14 days
               const matchesDate = eventDateNorm === normalizedTarget;
-              const isRecent =
-                checkRecent &&
-                (eventDateNorm === todayNorm ||
-                  Math.abs(new Date(latestPushDate).getTime() - new Date().getTime()) < 86400000 * 3);
+              const diffDays =
+                Math.abs(new Date(latestPushDate).getTime() - new Date().getTime()) / 86400000;
+              const isRecent = checkRecent && (eventDateNorm === todayNorm || diffDays <= 14);
 
               if (matchesDate || isRecent) {
                 hasPushedToday = true;
@@ -99,11 +114,24 @@ async function handleScan(req: NextRequest) {
                   .reduce((acc: number, p: any) => acc + (p.payload?.commits?.length || 1), 0);
 
                 commitCount = Math.max(1, totalCommitsInPushes);
-                latestCommitMessage =
-                  mostRecent.payload?.commits?.[0]?.message || 'Daily task updates pushed to repository';
+                const firstMsg = mostRecent.payload?.commits?.[0]?.message;
+                if (firstMsg) {
+                  latestCommitMessage = firstMsg;
+                } else if (mostRecent.type === 'CreateEvent') {
+                  latestCommitMessage = `Created ${mostRecent.payload?.ref_type || 'repository'} in ${latestRepo}`;
+                } else if (mostRecent.type === 'PullRequestEvent') {
+                  latestCommitMessage =
+                    mostRecent.payload?.pull_request?.title || `PR update in ${latestRepo}`;
+                } else {
+                  latestCommitMessage = `Active development in ${latestRepo}`;
+                }
               } else {
+                const firstMsg = mostRecent.payload?.commits?.[0]?.message;
                 latestCommitMessage =
-                  mostRecent.payload?.commits?.[0]?.message || 'Previous daily task commit';
+                  firstMsg ||
+                  (mostRecent.type === 'CreateEvent'
+                    ? `Created ${mostRecent.payload?.ref_type || 'repository'} in ${latestRepo}`
+                    : 'Previous daily task commit');
               }
             }
           }

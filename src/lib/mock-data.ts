@@ -373,6 +373,9 @@ export const mockTrainees: TraineeData[] = [
     status: 'active',
     avatar: '👨‍💻',
     joinedDate: '2026-01-15',
+    githubUsername: 'adinarayanameesala6304',
+    githubUrl: 'https://github.com/adinarayanameesala6304',
+    defaultRepo: 'Daily_Basis_React',
   },
   {
     _id: 'b4_trainee_adithya',
@@ -384,6 +387,9 @@ export const mockTrainees: TraineeData[] = [
     status: 'active',
     avatar: '👨‍💻',
     joinedDate: '2026-01-15',
+    githubUsername: 'AdithyaRamDarisi',
+    githubUrl: 'https://github.com/AdithyaRamDarisi/React2',
+    defaultRepo: 'React2',
   },
   {
     _id: 'b4_trainee_jose',
@@ -395,6 +401,9 @@ export const mockTrainees: TraineeData[] = [
     status: 'active',
     avatar: '👨‍💻',
     joinedDate: '2026-01-15',
+    githubUsername: 'JoseAmalaKishor007',
+    githubUrl: 'https://github.com/JoseAmalaKishor007/NYB_DailyTask',
+    defaultRepo: 'NYB_DailyTask',
   },
   {
     _id: 'b4_trainee_snehith',
@@ -406,6 +415,9 @@ export const mockTrainees: TraineeData[] = [
     status: 'active',
     avatar: '👨‍💻',
     joinedDate: '2026-01-15',
+    githubUsername: 'SnehithReddy',
+    githubUrl: 'https://github.com/SnehithReddy',
+    defaultRepo: 'NYB',
   },
   {
     _id: 'b4_trainee_sruthi',
@@ -417,6 +429,9 @@ export const mockTrainees: TraineeData[] = [
     status: 'active',
     avatar: '👩‍💻',
     joinedDate: '2026-01-15',
+    githubUsername: 'sruthibadavath',
+    githubUrl: 'https://github.com/sruthibadavath',
+    defaultRepo: 'NYB',
   },
   {
     _id: 'b4_trainee_nikhil',
@@ -428,6 +443,9 @@ export const mockTrainees: TraineeData[] = [
     status: 'active',
     avatar: '👨‍💻',
     joinedDate: '2026-01-15',
+    githubUsername: 'nikhil3454',
+    githubUrl: 'https://github.com/nikhil3454/NYB_Infotech_FrontEnd',
+    defaultRepo: 'NYB_Infotech_FrontEnd',
   },
   {
     _id: 'b4_trainee_ramesh',
@@ -439,6 +457,9 @@ export const mockTrainees: TraineeData[] = [
     status: 'active',
     avatar: '👨‍💻',
     joinedDate: '2026-01-15',
+    githubUsername: 'Ramesh-kumar109',
+    githubUrl: 'https://github.com/Ramesh-kumar109/NYB_daliy_task',
+    defaultRepo: 'NYB_daliy_task',
   },
 ];
 
@@ -727,6 +748,7 @@ const isOutdatedStore =
   !globalThis.__nexusStore.trainees.some((t) => t.name === 'Nikhil Kumar Kurapati') ||
   !globalThis.__nexusStore.trainees.some((t) => t.name === 'Adinarayana Meesala') ||
   !globalThis.__nexusStore.trainees.some((t) => t.name === 'Althaf Syed' && t.githubUsername) ||
+  !globalThis.__nexusStore.trainees.some((t) => t.name === 'Jose Amala Kishor' && t.githubUsername) ||
   globalThis.__nexusStore.trainees.some((t) => t.name === 'Ahmed Ali' || t.name === 'Alex Rivera' || t.name === 'Elena Rostova') ||
   globalThis.__nexusStore.trainees.some((t) => t.name === 'Sana Sulthana' && t.status !== 'active') ||
   globalThis.__nexusStore.assessments?.some((a) => a.score > 50);

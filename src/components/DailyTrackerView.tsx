@@ -4521,7 +4521,7 @@ export default function DailyTrackerView({ trackers = [], onRefresh }: { tracker
                         {r.name}
                       </div>
                       {(() => {
-                        const gh = getTraineeGithubInfo(r.name);
+                        const gh = getTraineeGithubInfo(r.name, selectedBatch);
                         if (gh) {
                           return (
                             <div style={{ marginTop: 3 }}>
@@ -4668,7 +4668,7 @@ export default function DailyTrackerView({ trackers = [], onRefresh }: { tracker
                           {r.githubPushStatus}
                         </button>
                         {(() => {
-                          const gh = getTraineeGithubInfo(r.name);
+                          const gh = getTraineeGithubInfo(r.name, selectedBatch);
                           if (gh) {
                             return (
                               <button
