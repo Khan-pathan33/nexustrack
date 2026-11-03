@@ -8,6 +8,25 @@ import { createFullMultiDateBatchWorkbook } from '@/lib/generate-batch-report';
 import { updateRealExcelWorkbookInPlace } from '@/lib/dynamic-excel';
 
 const DEDICATED_CORRECTION_EMAIL = 'nafisakhanampathan65@gmail.com';
+export const BATCH_3_TRAINEES = [
+  'Althaf Syed',
+  'Bala Krishna Parimi',
+  'Chandra Shekar K',
+  'Girish C',
+  'Sana Sulthana',
+  'Tejaswar Rao',
+];
+
+export const BATCH_4_TRAINEES = [
+  'Adinarayana Meesala',
+  'Adithya Ram',
+  'Jose Amala Kishor',
+  'Snehith Reddy Challa',
+  'Sruthi Badavath',
+  'Nikhil Kumar Kurapati',
+  'Ramesh Kumar A',
+];
+
 const BLOCKED_DOMAIN = '@nybinfotech.com';
 
 export interface AuditedSubmission {
@@ -356,12 +375,37 @@ export async function performLiveMailboxScanAndAudit(options?: ScanOptions): Pro
 
                     let targetBatch = activeBatch;
                     const combined = `${subject} ${textBody}`.toLowerCase();
-                    if (combined.includes('batch 4') || combined.includes('batch-4') || combined.includes('b4')) {
+                    const checkName = (actualTraineeName + ' ' + actualTraineeEmail).toLowerCase();
+
+                    // Check if sender is in Batch 4 canonical roster
+                    if (
+                      checkName.includes('adinarayana') ||
+                      checkName.includes('adithya.ram') ||
+                      checkName.includes('adithya ram') ||
+                      checkName.includes('joseamala') ||
+                      checkName.includes('amala kishor') ||
+                      checkName.includes('snehith') ||
+                      checkName.includes('sruthi') ||
+                      checkName.includes('nikhil') ||
+                      checkName.includes('ramesh.kumar') ||
+                      checkName.includes('ramesh kumar') ||
+                      combined.includes('batch 4') || combined.includes('batch-4') || combined.includes('b4')
+                    ) {
                       targetBatch = '4';
+                    } else if (
+                      checkName.includes('althaf') ||
+                      checkName.includes('bala krishna') ||
+                      checkName.includes('chandrashekar') ||
+                      checkName.includes('chandra shekar') ||
+                      checkName.includes('girish.c') ||
+                      checkName.includes('sana') ||
+                      checkName.includes('tejaswar') ||
+                      checkName.includes('tejeswar') ||
+                      combined.includes('batch 3') || combined.includes('batch-3') || combined.includes('b3')
+                    ) {
+                      targetBatch = '3';
                     } else if (combined.includes('batch 5') || combined.includes('batch-5') || combined.includes('b5')) {
                       targetBatch = '5';
-                    } else if (combined.includes('batch 3') || combined.includes('batch-3') || combined.includes('b3')) {
-                      targetBatch = '3';
                     }
 
                     const auditedItem: AuditedSubmission = {

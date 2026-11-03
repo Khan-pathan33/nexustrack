@@ -107,11 +107,75 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json().catch(() => ({}));
-    const dateQuery = body.date || '08-10-2026';
+    const dateQuery = body.date || '28-10-2026';
     const batchParam = body.batch || '3';
     const rows: BatchTraineeRow[] = body.rows && Array.isArray(body.rows) && body.rows.length > 0 ? body.rows : [];
 
+    const fs = await import('fs');
+    const path = await import('path');
+    const ExcelJS = (await import('exceljs')).default;
+    const realFilePath = path.join(process.cwd(), `Technical Team batch-${batchParam}_Daily_Status_Report.xlsx`);
+    const downloadsPath = path.join('C:', 'Users', 'Nafisa Khanam', 'Downloads', `Technical Team batch-${batchParam}_Daily_Status_Report.xlsx`);
+
     if (rows.length > 0) {
+      if (fs.existsSync(realFilePath)) {
+        try {
+          const workbook = new ExcelJS.Workbook();
+          await workbook.xlsx.readFile(realFilePath);
+          let sheet = workbook.getWorksheet(dateQuery);
+
+          if (sheet) {
+            rows.forEach((r, idx) => {
+              const rowNum = 13 + (idx + 1);
+              const row = sheet.getRow(rowNum);
+              row.getCell(1).value = r.sNo || idx + 1;
+              row.getCell(2).value = r.name;
+              row.getCell(3).value = r.pendingTopics || 'N/A';
+              row.getCell(4).value = r.completedTopics || 'Yes';
+              row.getCell(5).value = r.taskAssign || 'Yes';
+              row.getCell(6).value = r.doubts || 'No Blockers Reported';
+              row.getCell(7).value = r.discussionSummary || '';
+              row.getCell(8).value = r.githubPushStatus || 'Yes';
+              row.getCell(9).value = r.emailReviewStatus || 'Reviewed';
+              row.getCell(10).value = r.standupParticipation || 'Conducted';
+              row.getCell(11).value = r.standupRating || 'Good';
+              row.getCell(12).value = r.standupRemarks || 'Active participation.';
+              row.getCell(13).value = r.selfProjectStatus || 'N/A';
+            });
+          } else {
+            const newWb = await createBatchDailyStatusWorkbook(dateQuery, rows, undefined, undefined, batchParam);
+            const newSheet = newWb.getWorksheet(dateQuery);
+            if (newSheet) {
+              const added = workbook.addWorksheet(dateQuery);
+              newSheet.eachRow((row, rowNumber) => {
+                const addedRow = added.getRow(rowNumber);
+                row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
+                  addedRow.getCell(colNumber).value = cell.value;
+                  addedRow.getCell(colNumber).style = Object.assign({}, cell.style);
+                });
+                addedRow.height = row.height;
+              });
+            }
+          }
+
+          await workbook.xlsx.writeFile(realFilePath);
+          if (fs.existsSync(path.dirname(downloadsPath))) {
+            try { await workbook.xlsx.writeFile(downloadsPath); } catch {}
+          }
+
+          const buffer = await workbook.xlsx.writeBuffer();
+          return new NextResponse(buffer, {
+            status: 200,
+            headers: {
+              'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+              'Content-Disposition': `attachment; filename="Technical Team batch-${batchParam}_Daily_Status_Report.xlsx"`,
+            },
+          });
+        } catch (e: any) {
+          console.warn('Could not update real workbook in-place, falling back to new workbook:', e.message);
+        }
+      }
+
       const workbook = await createBatchDailyStatusWorkbook(dateQuery, rows, undefined, undefined, batchParam);
       const buffer = await workbook.xlsx.writeBuffer();
       return new NextResponse(buffer, {

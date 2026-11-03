@@ -153,17 +153,41 @@ export async function POST(req: NextRequest) {
     }
 
     // Attach authentic Excel workbook buffer
-    const realFilePath = path.join(process.cwd(), `Technical Team batch-${batchParam}_Daily_Status_Report.xlsx`);
+    const isBothBatches = batchParam === 'both' || batchParam === '3 & 4';
+    const attachments: any[] = [];
 
-    let excelBuffer: Buffer;
-    if (body.rows && Array.isArray(body.rows) && body.rows.length > 0) {
-      const workbook = await createBatchDailyStatusWorkbook(dateQuery, finalRows, undefined, undefined, batchParam);
-      excelBuffer = Buffer.from(await workbook.xlsx.writeBuffer());
-    } else if (fs.existsSync(realFilePath)) {
-      excelBuffer = fs.readFileSync(realFilePath);
+    if (isBothBatches) {
+      const b3Path = path.join(process.cwd(), 'Technical Team batch-3_Daily_Status_Report.xlsx');
+      const b4Path = path.join(process.cwd(), 'Technical Team batch-4_Daily_Status_Report.xlsx');
+
+      if (fs.existsSync(b3Path)) {
+        attachments.push({
+          filename: 'Technical Team batch-3_Daily_Status_Report.xlsx',
+          content: fs.readFileSync(b3Path),
+          contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        });
+      }
+      if (fs.existsSync(b4Path)) {
+        attachments.push({
+          filename: 'Technical Team batch-4_Daily_Status_Report.xlsx',
+          content: fs.readFileSync(b4Path),
+          contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        });
+      }
     } else {
-      const workbook = await createBatchDailyStatusWorkbook(dateQuery, finalRows, undefined, undefined, batchParam);
-      excelBuffer = Buffer.from(await workbook.xlsx.writeBuffer());
+      const realFilePath = path.join(process.cwd(), `Technical Team batch-${batchParam}_Daily_Status_Report.xlsx`);
+      let excelBuffer: Buffer;
+      if (fs.existsSync(realFilePath)) {
+        excelBuffer = fs.readFileSync(realFilePath);
+      } else {
+        const workbook = await createBatchDailyStatusWorkbook(dateQuery, finalRows, undefined, undefined, batchParam);
+        excelBuffer = Buffer.from(await workbook.xlsx.writeBuffer());
+      }
+      attachments.push({
+        filename: `Technical Team batch-${batchParam}_Daily_Status_Report.xlsx`,
+        content: excelBuffer,
+        contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      });
     }
 
     const effectiveSmtpHost =
@@ -182,14 +206,6 @@ export async function POST(req: NextRequest) {
     const effectiveImapPort =
       Number(body.imapPort || userRecord?.imapPort) || 993;
 
-    const attachments: any[] = [
-      {
-        filename: `Technical Team batch-${batchParam}_Daily_Status_Report.xlsx`,
-        content: excelBuffer,
-        contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      },
-    ];
-
     if (Array.isArray(body.extraAttachments)) {
       for (const att of body.extraAttachments) {
         if (att && att.filename && att.content) {
@@ -201,6 +217,10 @@ export async function POST(req: NextRequest) {
         }
       }
     }
+
+    const attachmentNamesDesc = isBothBatches
+      ? 'Technical Team batch-3 and batch-4 spreadsheets'
+      : `Technical Team batch-${batchParam}_Daily_Status_Report.xlsx`;
 
     // ──────────────────────────────────────────────────────────
     // CASE 1: SAVE AS DRAFT IN OUTLOOK / GMAIL MAILBOX
@@ -224,7 +244,7 @@ export async function POST(req: NextRequest) {
         batch: batchParam,
         body: customMessage,
         html: htmlMessage,
-        attachmentName: `Technical Team batch-${batchParam}_Daily_Status_Report.xlsx`,
+        attachmentName: attachmentNamesDesc,
         createdAt: new Date().toISOString(),
         status: 'draft',
       };
@@ -258,7 +278,7 @@ export async function POST(req: NextRequest) {
 
           // Compose MIME raw message with boundaries
           const boundary = `====NextPart_${Date.now()}====`;
-          const rawMime = [
+          const rawMimeParts = [
             `From: "Pathan Nafisa Khanam" <${emailUser}>`,
             `To: ${toRecipients}`,
             ccRecipients ? `Cc: ${ccRecipients}` : '',
@@ -273,18 +293,23 @@ export async function POST(req: NextRequest) {
             `Content-Transfer-Encoding: 8bit`,
             ``,
             htmlMessage,
-            ``,
-            `--${boundary}`,
-            `Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet; name="Technical Team batch-${batchParam}_Daily_Status_Report.xlsx"`,
-            `Content-Transfer-Encoding: base64`,
-            `Content-Disposition: attachment; filename="Technical Team batch-${batchParam}_Daily_Status_Report.xlsx"`,
-            ``,
-            excelBuffer.toString('base64'),
-            ``,
-            `--${boundary}--`,
-          ]
-            .filter((l) => l !== undefined)
-            .join('\r\n');
+          ];
+
+          for (const att of attachments) {
+            rawMimeParts.push(
+              ``,
+              `--${boundary}`,
+              `Content-Type: ${att.contentType || 'application/octet-stream'}; name="${att.filename}"`,
+              `Content-Transfer-Encoding: base64`,
+              `Content-Disposition: attachment; filename="${att.filename}"`,
+              ``,
+              Buffer.isBuffer(att.content) ? att.content.toString('base64') : Buffer.from(att.content).toString('base64')
+            );
+          }
+
+          rawMimeParts.push(``, `--${boundary}--`);
+
+          const rawMime = rawMimeParts.filter((l) => l !== undefined).join('\r\n');
 
           const draftBoxes = effectiveImapHost.includes('outlook')
             ? ['Drafts', 'Draft']
@@ -315,12 +340,12 @@ export async function POST(req: NextRequest) {
         action: 'draft',
         savedInMailbox: savedInImap,
         message: savedInImap
-          ? `Status Report Draft (with Technical Team batch-${batchParam}_Daily_Status_Report.xlsx attached) saved directly to your Outlook Drafts folder! (Viewable at https://outlook.cloud.microsoft/mail/)`
-          : `Status Report Draft (with Technical Team batch-${batchParam}_Daily_Status_Report.xlsx attached) saved successfully! You can open it anytime in Outlook Web.`,
+          ? `Status Report Draft (with ${attachmentNamesDesc} attached) saved directly to your Outlook Drafts folder! (Viewable at https://outlook.cloud.microsoft/mail/)`
+          : `Status Report Draft (with ${attachmentNamesDesc} attached) saved successfully! You can open it anytime in Outlook Web.`,
         subject: emailSubject,
         to: toRecipients,
         cc: ccRecipients,
-        attachmentName: `Technical Team batch-${batchParam}_Daily_Status_Report.xlsx`,
+        attachmentName: attachmentNamesDesc,
       });
     }
 
@@ -364,9 +389,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: true,
       action: 'send',
-      message: `Status Report successfully emailed to ${toRecipients} (Cc: ${ccRecipients}) with Technical Team batch-${batchParam}_Daily_Status_Report.xlsx attached!`,
+      message: `Status Report successfully emailed to ${toRecipients} (Cc: ${ccRecipients}) with ${attachmentNamesDesc} attached!`,
       recipient: toRecipients,
-      attachmentName: `Technical Team batch-${batchParam}_Daily_Status_Report.xlsx`,
+      attachmentName: attachmentNamesDesc,
     });
   } catch (error: any) {
     console.error('Email report error:', error);

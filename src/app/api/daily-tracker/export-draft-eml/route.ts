@@ -6,19 +6,32 @@ import { generateTLReportHTML, DEFAULT_TL_RECIPIENTS } from '@/lib/weekly-curric
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const dateParam = searchParams.get('date') || '21-10-2026';
+    const dateParam = searchParams.get('date') || '28-10-2026';
     const batchParam = searchParams.get('batch') || '3';
+    const isBothBatches = batchParam === 'both' || batchParam === '3 & 4';
 
-    const excelPath = path.join(
-      process.cwd(),
-      `Technical Team batch-${batchParam}_Daily_Status_Report.xlsx`
-    );
+    const attachments: { filename: string; buffer: Buffer }[] = [];
 
-    let excelBuffer: Buffer;
-    if (fs.existsSync(excelPath)) {
-      excelBuffer = fs.readFileSync(excelPath);
+    if (isBothBatches) {
+      const b3Path = path.join(process.cwd(), 'Technical Team batch-3_Daily_Status_Report.xlsx');
+      const b4Path = path.join(process.cwd(), 'Technical Team batch-4_Daily_Status_Report.xlsx');
+      if (fs.existsSync(b3Path)) {
+        attachments.push({ filename: 'Technical Team batch-3_Daily_Status_Report.xlsx', buffer: fs.readFileSync(b3Path) });
+      }
+      if (fs.existsSync(b4Path)) {
+        attachments.push({ filename: 'Technical Team batch-4_Daily_Status_Report.xlsx', buffer: fs.readFileSync(b4Path) });
+      }
     } else {
-      excelBuffer = Buffer.from('');
+      const excelPath = path.join(
+        process.cwd(),
+        `Technical Team batch-${batchParam}_Daily_Status_Report.xlsx`
+      );
+      if (fs.existsSync(excelPath)) {
+        attachments.push({
+          filename: `Technical Team batch-${batchParam}_Daily_Status_Report.xlsx`,
+          buffer: fs.readFileSync(excelPath),
+        });
+      }
     }
 
     const htmlContent = generateTLReportHTML({
@@ -28,7 +41,7 @@ export async function GET(req: NextRequest) {
     });
 
     const boundary = `----=_Part_${Date.now()}`;
-    const emlContent = [
+    const emlParts = [
       'X-Unsent: 1',
       'From: "Pathan Nafisa Khanam" <nafisa.khanam@nybinfotech.com>',
       `To: ${DEFAULT_TL_RECIPIENTS.to.join(', ')}`,
@@ -43,23 +56,27 @@ export async function GET(req: NextRequest) {
       'Content-Transfer-Encoding: 8bit',
       '',
       htmlContent,
-      '',
-      `--${boundary}`,
-      `Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet; name="Technical Team batch-${batchParam}_Daily_Status_Report.xlsx"`,
-      'Content-Transfer-Encoding: base64',
-      `Content-Disposition: attachment; filename="Technical Team batch-${batchParam}_Daily_Status_Report.xlsx"`,
-      '',
-      excelBuffer.toString('base64'),
-      '',
-      `--${boundary}--`,
-      '',
-    ].join('\r\n');
+    ];
 
-    return new NextResponse(emlContent, {
+    for (const att of attachments) {
+      emlParts.push(
+        '',
+        `--${boundary}`,
+        `Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet; name="${att.filename}"`,
+        'Content-Transfer-Encoding: base64',
+        `Content-Disposition: attachment; filename="${att.filename}"`,
+        '',
+        att.buffer.toString('base64')
+      );
+    }
+
+    emlParts.push('', `--${boundary}--`, '');
+
+    return new NextResponse(emlParts.join('\r\n'), {
       status: 200,
       headers: {
         'Content-Type': 'message/rfc822',
-        'Content-Disposition': `attachment; filename="Status_Report_${dateParam}.eml"`,
+        'Content-Disposition': `attachment; filename="Status_Report_${dateParam}_Batch_${batchParam}.eml"`,
       },
     });
   } catch (error: any) {

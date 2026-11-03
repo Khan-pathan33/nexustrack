@@ -83,3 +83,37 @@ export async function DELETE(req: NextRequest) {
   else store.assessments = store.assessments.filter(a => a._id !== id);
   return NextResponse.json({ success: true, source: 'local' });
 }
+
+export async function PUT(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const { id, name, email, department, skills, status, overallScore, avatar } = body;
+    if (!id) return NextResponse.json({ error: 'Trainee ID is required' }, { status: 400 });
+
+    if (isMongoConfigured()) {
+      await connectToDatabase();
+      const updated = await Trainee.findByIdAndUpdate(
+        id,
+        { name, email, department, skills, status, overallScore, avatar },
+        { new: true }
+      );
+      return NextResponse.json({ success: true, trainee: updated, source: 'mongodb' });
+    }
+
+    const t = store.trainees.find(tr => tr._id === id);
+    if (t) {
+      if (name !== undefined) t.name = name;
+      if (email !== undefined) t.email = email;
+      if (department !== undefined) t.department = department;
+      if (skills !== undefined) t.skills = skills;
+      if (status !== undefined) t.status = status;
+      if (overallScore !== undefined) t.overallScore = overallScore;
+      if (avatar !== undefined) t.avatar = avatar;
+      return NextResponse.json({ success: true, trainee: t, source: 'local' });
+    }
+    return NextResponse.json({ error: 'Trainee not found' }, { status: 404 });
+  } catch (error: any) {
+    return NextResponse.json({ error: error?.message || 'Update failed' }, { status: 500 });
+  }
+}
+

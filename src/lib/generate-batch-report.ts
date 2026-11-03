@@ -20,11 +20,28 @@ export const DEFAULT_BATCH_TRAINEES: string[] = [
   'Althaf Syed',
   'Bala Krishna Parimi',
   'Chandra Shekar K',
-  'Chevva Vinay Kumar',
   'Girish C',
-  'Jayakrishna Madicharla',
   'Sana Sulthana',
   'Tejaswar Rao',
+];
+
+export const BATCH_3_TRAINEES: string[] = [
+  'Althaf Syed',
+  'Bala Krishna Parimi',
+  'Chandra Shekar K',
+  'Girish C',
+  'Sana Sulthana',
+  'Tejaswar Rao',
+];
+
+export const BATCH_4_TRAINEES: string[] = [
+  'Adinarayana Meesala',
+  'Adithya Ram',
+  'Jose Amala Kishor',
+  'Snehith Reddy Challa',
+  'Sruthi Badavath',
+  'Nikhil Kumar Kurapati',
+  'Ramesh Kumar A',
 ];
 
 export const DEFAULT_REACT_TRAINEE_ROWS: BatchTraineeRow[] = [
@@ -84,27 +101,9 @@ export const DEFAULT_REACT_TRAINEE_ROWS: BatchTraineeRow[] = [
     selfProjectStatus:
       'Employee Management System: fixed Reports page functionality and implemented role-based login.',
   },
+  
   {
-    sNo: 4,
-    name: 'Chevva Vinay Kumar',
-    pendingTopics: 'N/A',
-    completedTopics: 'Yes',
-    taskAssign: 'Yes',
-    doubts:
-      'Resolved - email sending was delayed by a corrupted attachment; the file was deleted and re-uploaded.',
-    discussionSummary:
-      'Completed React project setup with Vite, project structure, functional components, JSX syntax and rules, JavaScript expressions, Fragments, Strict Mode, reusable components, and the required Profile Page with Header, Profile, Skills, Education, and Footer. Also revised prior HTML/CSS layout concepts.',
-    githubPushStatus: 'Yes',
-    emailReviewStatus:
-      'Reviewed. Complete React scope; correct “harmed file” to “corrupted file,” “Java script” to “JavaScript,” and keep prior HTML/CSS revision separate from today’s React assignment.',
-    standupParticipation: 'Participated',
-    standupRating: 'Good',
-    standupRemarks: 'Good stand-up participation and full completion of the required React scope.',
-    selfProjectStatus: 'N/A',
-  },
-  {
-    sNo: 5,
-    name: 'Girish C',
+    sNo: 4, name: 'Girish C',
     pendingTopics:
       'Pending: assigned React project exercises and Profile Page mini assignment were not reported as completed.',
     completedTopics:
@@ -121,27 +120,9 @@ export const DEFAULT_REACT_TRAINEE_ROWS: BatchTraineeRow[] = [
     standupRemarks: 'Good stand-up participation; complete or confirm the assigned exercises and Profile Page.',
     selfProjectStatus: 'N/A',
   },
+  
   {
-    sNo: 6,
-    name: 'Jayakrishna Madicharla',
-    pendingTopics: 'Pending: React Profile Page mini assignment was not reported as completed.',
-    completedTopics:
-      'Partial - Completed React project creation and structure, reusable functional components, JSX rules and expressions, Fragments, and Strict Mode. Profile Page remains unconfirmed.',
-    taskAssign: 'Yes',
-    doubts: 'No Blockers Reported',
-    discussionSummary:
-      'Created a React project using Vite and practiced project structure, functional components, JSX, expressions, Fragments, and Strict Mode. The required Profile Page was not reported.',
-    githubPushStatus: 'Yes',
-    emailReviewStatus:
-      'Reviewed. “No Pending Task” conflicts with the missing Profile Page mini assignment; report it explicitly.',
-    standupParticipation: 'Participated',
-    standupRating: 'Average',
-    standupRemarks: 'Stand-up participation was average; complete or confirm the React Profile Page.',
-    selfProjectStatus: 'N/A',
-  },
-  {
-    sNo: 7,
-    name: 'Sana Sulthana',
+    sNo: 5, name: 'Sana Sulthana',
     pendingTopics: 'N/A',
     completedTopics: 'Yes',
     taskAssign: 'Yes',
@@ -157,8 +138,7 @@ export const DEFAULT_REACT_TRAINEE_ROWS: BatchTraineeRow[] = [
     selfProjectStatus: 'N/A',
   },
   {
-    sNo: 8,
-    name: 'Tejaswar Rao',
+    sNo: 6, name: 'Tejaswar Rao',
     pendingTopics: 'N/A',
     completedTopics: 'Yes',
     taskAssign: 'Yes',

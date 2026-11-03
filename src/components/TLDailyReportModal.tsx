@@ -32,7 +32,7 @@ export default function TLDailyReportModal({
   isOpen,
   onClose,
   defaultRecipient = '',
-  sheetDate = '26-10-2026',
+  sheetDate = '28-10-2026',
   batchNumber = '3',
   rows = [],
 }: {
@@ -46,6 +46,7 @@ export default function TLDailyReportModal({
   const { success: toastSuccess, error: toastError, info: toastInfo } = useToast();
 
   const [activeTab, setActiveTab] = useState<'preview' | 'edit' | 'raw'>('preview');
+  const [currentBatch, setCurrentBatch] = useState<string>(String(batchNumber || '3'));
 
   // Exact recipients from official Outlook screenshot
   const [toRecipients, setToRecipients] = useState(
@@ -61,7 +62,7 @@ export default function TLDailyReportModal({
   // Report Content State — dynamically built based on the Curriculum Day and Trainees' working rows!
   const [reportData, setReportData] = useState<TLReportData>(() =>
     buildDynamicTLReport({
-      date: sheetDate || '26-10-2026',
+      date: sheetDate || '28-10-2026',
       batchNumber: batchNumber || '3',
       rows,
     })
@@ -76,19 +77,26 @@ export default function TLDailyReportModal({
     { filename: string; content: string; size: string }[]
   >([]);
 
-  // Keep subject and data in sync when sheetDate, batchNumber, or rows changes
+  // Sync currentBatch when batchNumber prop changes
+  useEffect(() => {
+    if (batchNumber) {
+      setCurrentBatch(String(batchNumber));
+    }
+  }, [batchNumber]);
+
+  // Keep subject and data in sync when sheetDate, currentBatch, or rows changes
   useEffect(() => {
     if (sheetDate) {
       setSubject(`Status_Report_${sheetDate}:`);
       setReportData(
         buildDynamicTLReport({
           date: sheetDate,
-          batchNumber: batchNumber || '3',
+          batchNumber: currentBatch,
           rows,
         })
       );
     }
-  }, [sheetDate, batchNumber, rows]);
+  }, [sheetDate, currentBatch, rows]);
 
   // Generate HTML and PlainText
   const htmlContent = useMemo(() => {
@@ -102,11 +110,22 @@ export default function TLDailyReportModal({
   if (!isOpen) return null;
 
   const downloadExcel = () => {
-    window.location.href = `/api/daily-tracker/export-excel?date=${sheetDate}&batch=${batchNumber}`;
-    toastSuccess(
-      'Excel Report Downloaded',
-      `Technical Team batch-${batchNumber}_Daily_Status_Report.xlsx downloaded to your machine.`
-    );
+    if (currentBatch === 'both' || currentBatch === '3 & 4') {
+      window.open(`/api/daily-tracker/export-excel?date=${sheetDate}&batch=3`, '_blank');
+      setTimeout(() => {
+        window.open(`/api/daily-tracker/export-excel?date=${sheetDate}&batch=4`, '_blank');
+      }, 500);
+      toastSuccess(
+        'Both Batch Excel Reports Downloaded',
+        'Technical Team batch-3 and batch-4 spreadsheets downloaded to your machine.'
+      );
+    } else {
+      window.location.href = `/api/daily-tracker/export-excel?date=${sheetDate}&batch=${currentBatch}`;
+      toastSuccess(
+        'Excel Report Downloaded',
+        `Technical Team batch-${currentBatch}_Daily_Status_Report.xlsx downloaded to your machine.`
+      );
+    }
   };
 
   const handleCopyFormattedTable = async () => {
@@ -136,10 +155,10 @@ export default function TLDailyReportModal({
   };
 
   const downloadDraftEml = () => {
-    window.location.href = `/api/daily-tracker/export-draft-eml?date=${sheetDate}&batch=${batchNumber}`;
+    window.location.href = `/api/daily-tracker/export-draft-eml?date=${sheetDate}&batch=${currentBatch}`;
     toastSuccess(
       'Draft File Downloaded (.eml)',
-      'Double-click Status_Report_' + sheetDate + '.eml to open directly in Outlook as a draft with the Excel file pre-attached!'
+      `Double-click Status_Report_${sheetDate}_Batch_${currentBatch}.eml to open directly in Outlook as a draft with the Excel file pre-attached!`
     );
   };
 
@@ -195,7 +214,7 @@ export default function TLDailyReportModal({
           to: toRecipients,
           cc: ccRecipients,
           date: sheetDate,
-          batch: batchNumber,
+          batch: currentBatch,
           subject: subject.trim(),
           html: htmlContent,
           message: plainTextContent,
@@ -235,7 +254,7 @@ export default function TLDailyReportModal({
           to: toRecipients,
           cc: ccRecipients,
           date: sheetDate,
-          batch: batchNumber,
+          batch: currentBatch,
           subject: subject.trim(),
           html: htmlContent,
           message: plainTextContent,
@@ -365,7 +384,78 @@ export default function TLDailyReportModal({
             </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            {/* Batch Selector Pills */}
+            <div
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                padding: 3,
+                background: 'rgba(0, 0, 0, 0.45)',
+                borderRadius: 8,
+                border: '1px solid rgba(255, 255, 255, 0.12)',
+                gap: 3,
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => setCurrentBatch('3')}
+                style={{
+                  padding: '4px 11px',
+                  borderRadius: 6,
+                  border: 'none',
+                  background: currentBatch === '3' ? 'linear-gradient(135deg, #0284c7, #0369a1)' : 'transparent',
+                  color: currentBatch === '3' ? '#ffffff' : '#94a3b8',
+                  fontWeight: 700,
+                  fontSize: 11.5,
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                }}
+              >
+                Batch 3
+              </button>
+              <button
+                type="button"
+                onClick={() => setCurrentBatch('4')}
+                style={{
+                  padding: '4px 11px',
+                  borderRadius: 6,
+                  border: 'none',
+                  background: currentBatch === '4' ? 'linear-gradient(135deg, #9333ea, #7e22ce)' : 'transparent',
+                  color: currentBatch === '4' ? '#ffffff' : '#94a3b8',
+                  fontWeight: 700,
+                  fontSize: 11.5,
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                }}
+              >
+                Batch 4
+              </button>
+              <button
+                type="button"
+                onClick={() => setCurrentBatch('both')}
+                style={{
+                  padding: '4px 11px',
+                  borderRadius: 6,
+                  border: 'none',
+                  background:
+                    currentBatch === 'both' || currentBatch === '3 & 4'
+                      ? 'linear-gradient(135deg, #10b981, #059669)'
+                      : 'transparent',
+                  color:
+                    currentBatch === 'both' || currentBatch === '3 & 4'
+                      ? '#ffffff'
+                      : '#94a3b8',
+                  fontWeight: 700,
+                  fontSize: 11.5,
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                }}
+              >
+                Both (3 & 4)
+              </button>
+            </div>
+
             <button onClick={onClose} className="btn btn-ghost btn-sm">
               <X size={16} />
             </button>
@@ -426,15 +516,30 @@ export default function TLDailyReportModal({
             style={{
               padding: '14px 18px',
               borderRadius: 10,
-              background: 'rgba(16, 185, 129, 0.12)',
-              border: '1.5px solid rgba(16, 185, 129, 0.45)',
+              background:
+                currentBatch === '4'
+                  ? 'rgba(147, 51, 234, 0.12)'
+                  : currentBatch === 'both'
+                  ? 'rgba(16, 185, 129, 0.14)'
+                  : 'rgba(2, 132, 199, 0.12)',
+              border:
+                currentBatch === '4'
+                  ? '1.5px solid rgba(147, 51, 234, 0.5)'
+                  : currentBatch === 'both'
+                  ? '1.5px solid rgba(16, 185, 129, 0.5)'
+                  : '1.5px solid rgba(2, 132, 199, 0.45)',
               marginBottom: 16,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
               flexWrap: 'wrap',
               gap: 12,
-              boxShadow: '0 4px 16px rgba(16, 185, 129, 0.15)',
+              boxShadow:
+                currentBatch === '4'
+                  ? '0 4px 16px rgba(147, 51, 234, 0.18)'
+                  : currentBatch === 'both'
+                  ? '0 4px 16px rgba(16, 185, 129, 0.18)'
+                  : '0 4px 16px rgba(2, 132, 199, 0.15)',
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -443,36 +548,73 @@ export default function TLDailyReportModal({
                   width: 38,
                   height: 38,
                   borderRadius: 8,
-                  background: 'linear-gradient(135deg, #107c41, #0e5c30)',
+                  background:
+                    currentBatch === '4'
+                      ? 'linear-gradient(135deg, #7e22ce, #6b21a8)'
+                      : currentBatch === 'both'
+                      ? 'linear-gradient(135deg, #059669, #047857)'
+                      : 'linear-gradient(135deg, #107c41, #0e5c30)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   color: '#ffffff',
-                  boxShadow: '0 2px 8px rgba(16, 124, 65, 0.4)',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)',
                 }}
               >
                 <FileSpreadsheet size={20} />
               </div>
               <div>
                 <div style={{ fontSize: 13.5, fontWeight: 800, color: '#f8fafc', display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span>Technical Team batch-{batchNumber}_Daily_Status_Report.xlsx</span>
+                  <span>
+                    {currentBatch === 'both'
+                      ? 'Technical Team batch-3 & batch-4 spreadsheets'
+                      : `Technical Team batch-${currentBatch}_Daily_Status_Report.xlsx`}
+                  </span>
                   <span
                     style={{
                       fontSize: 10,
                       padding: '2px 7px',
                       borderRadius: 4,
-                      background: 'rgba(16, 185, 129, 0.3)',
-                      color: '#34d399',
+                      background:
+                        currentBatch === '4'
+                          ? 'rgba(147, 51, 234, 0.35)'
+                          : currentBatch === 'both'
+                          ? 'rgba(16, 185, 129, 0.35)'
+                          : 'rgba(2, 132, 199, 0.3)',
+                      color:
+                        currentBatch === '4'
+                          ? '#c084fc'
+                          : currentBatch === 'both'
+                          ? '#34d399'
+                          : '#38bdf8',
                       fontWeight: 800,
                       letterSpacing: 0.4,
-                      border: '1px solid rgba(16, 185, 129, 0.5)',
+                      border:
+                        currentBatch === '4'
+                          ? '1px solid rgba(147, 51, 234, 0.6)'
+                          : currentBatch === 'both'
+                          ? '1px solid rgba(16, 185, 129, 0.6)'
+                          : '1px solid rgba(2, 132, 199, 0.5)',
                     }}
                   >
-                    📎 PRE-ATTACHED
+                    📎 {currentBatch === 'both' ? '2 WORKBOOKS PRE-ATTACHED' : `PRE-ATTACHED (BATCH ${currentBatch})`}
                   </span>
                 </div>
-                <div style={{ fontSize: 11.5, color: '#a7f3d0', marginTop: 2 }}>
-                  ✓ Official 13-Column Spreadsheet Attached automatically (with all October sheets & live trainee evaluations)
+                <div
+                  style={{
+                    fontSize: 11.5,
+                    color:
+                      currentBatch === '4'
+                        ? '#e9d5ff'
+                        : currentBatch === 'both'
+                        ? '#a7f3d0'
+                        : '#bae6fd',
+                    marginTop: 2,
+                  }}
+                >
+                  {currentBatch === 'both'
+                    ? '✓ Both Official 13-Column Workbooks Attached automatically (batch-3 & batch-4 .xlsx with all October sheets & live trainee evaluations)'
+                    : `✓ Official 13-Column Spreadsheet Attached automatically for Batch ${currentBatch} (with all October sheets & live trainee evaluations)`}
                 </div>
               </div>
             </div>
@@ -483,14 +625,29 @@ export default function TLDailyReportModal({
               className="btn btn-secondary btn-sm"
               style={{
                 fontSize: 11.5,
-                color: '#34d399',
-                borderColor: 'rgba(16, 185, 129, 0.4)',
-                background: 'rgba(16, 185, 129, 0.1)',
+                color:
+                  currentBatch === '4'
+                    ? '#c084fc'
+                    : currentBatch === 'both'
+                    ? '#34d399'
+                    : '#38bdf8',
+                borderColor:
+                  currentBatch === '4'
+                    ? 'rgba(147, 51, 234, 0.4)'
+                    : currentBatch === 'both'
+                    ? 'rgba(16, 185, 129, 0.4)'
+                    : 'rgba(2, 132, 199, 0.4)',
+                background:
+                  currentBatch === '4'
+                    ? 'rgba(147, 51, 234, 0.12)'
+                    : currentBatch === 'both'
+                    ? 'rgba(16, 185, 129, 0.12)'
+                    : 'rgba(2, 132, 199, 0.1)',
                 gap: 6,
               }}
-              title="Download local copy of the attached .xlsx workbook"
+              title="Download local copy of the attached .xlsx workbook(s)"
             >
-              <Download size={13} /> Download .xlsx Copy
+              <Download size={13} /> {currentBatch === 'both' ? 'Download Both .xlsx' : 'Download .xlsx Copy'}
             </button>
           </div>
 

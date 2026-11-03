@@ -658,8 +658,9 @@ export function buildDynamicTLReport(params: {
   senderEmail?: string;
 }): TLReportData {
   const batch = String(params.batchNumber || '3');
-  const dateStr = params.date || '26-10-2026';
+  const dateStr = params.date || '28-10-2026';
   const rows = params.rows || [];
+  const isBoth = batch === 'both' || batch === '3 & 4';
 
   // Determine day number (1 to 5)
   let dayNum = params.dayNumber || 1;
@@ -681,21 +682,23 @@ export function buildDynamicTLReport(params: {
   const nextDayNum = dayNum < 5 ? dayNum + 1 : 1;
   const nextDay = WEEKLY_CURRICULUM.find((d) => d.dayNumber === nextDayNum) || WEEKLY_CURRICULUM[1];
 
+  const targetBatchLabel = isBoth ? 'Batch-3 & Batch-4' : `Batch-${batch}`;
+
   // 1. Planned Tasks based on today's curriculum
   const plannedTasks: string[] = [
-    `Connect with all Batch-${batch} trainees individually through one-on-one discussions.`,
+    `Connect with all ${targetBatchLabel} trainees individually through one-on-one discussions.`,
     `Review today's React topics covering ${curDay.theme}.`,
     ...curDay.assignedTasks.slice(0, 8),
     curDay.practicalTask ? `Review the ${curDay.practicalTask.title} requirements.` : `Review assigned practical implementation requirements.`,
     `Verify GitHub repository updates and code push status.`,
     `Review daily email submissions and provide feedback on incomplete or inconsistent progress reports.`,
-    `Conduct the daily standup call with Batch-${batch} trainees.`,
+    `Conduct the daily standup call with ${targetBatchLabel} trainees.`,
   ];
 
   // 2. Completed Tasks based on trainees' working and submissions
   const completedTasks: string[] = [
     `Reviewed today's React curriculum covering ${curDay.theme}.`,
-    `Conducted individual progress reviews for Batch-${batch} trainees based on their reported topic completion, assigned tasks, practical implementations, and email submissions.`,
+    `Conducted individual progress reviews for ${targetBatchLabel} trainees based on their reported topic completion, assigned tasks, practical implementations, and email submissions.`,
     `Reviewed trainee progress on reusable components, state handling, and practical exercises.`,
     curDay.practicalTask ? `Reviewed the ${curDay.practicalTask.title} implementations.` : `Reviewed trainee practical implementations.`,
     `Reviewed GitHub push status and daily email submissions for the trainees.`,
@@ -722,9 +725,9 @@ export function buildDynamicTLReport(params: {
 
   // 4. Planned Tasks Next Day
   const nextDayTasks: string[] = [
-    `Connect with Batch ${batch} technical group`,
-    `Conduct the daily standup call with Batch-${batch} trainees.`,
-    `Conduct one-on-one discussions with Batch-${batch} trainees.`,
+    `Connect with ${targetBatchLabel} technical group`,
+    `Conduct the daily standup call with ${targetBatchLabel} trainees.`,
+    `Conduct one-on-one discussions with ${targetBatchLabel} trainees.`,
     `Review next day's React curriculum (${nextDay.daySubtitle}) covering ${nextDay.theme}.`,
     `Follow up with trainees who have pending React implementations and assignments.`,
     `Review updated GitHub repositories and daily email submissions.`,
@@ -747,7 +750,10 @@ export function buildDynamicTLReport(params: {
  */
 export function generateTLReportHTML(data: Partial<TLReportData> = {}): string {
   const r = { ...DEFAULT_TL_REPORT_DATA, ...data };
-  const batchLabel = `1.Batch-${r.batchNumber}:-`;
+  const isBoth = String(r.batchNumber) === 'both' || String(r.batchNumber) === '3 & 4';
+  const batchLabel = isBoth
+    ? `1.Batch-3 & Batch-4:-`
+    : `1.Batch-${r.batchNumber}:-`;
 
   const renderList = (items: string[]) =>
     `<ul style="margin: 6px 0 0 20px; padding: 0; list-style-type: disc;">${items
@@ -834,7 +840,10 @@ export function generateTLReportHTML(data: Partial<TLReportData> = {}): string {
  */
 export function generateTLReportPlainText(data: Partial<TLReportData> = {}): string {
   const r = { ...DEFAULT_TL_REPORT_DATA, ...data };
-  const batchLabel = `1.Batch-${r.batchNumber}:-`;
+  const isBoth = String(r.batchNumber) === 'both' || String(r.batchNumber) === '3 & 4';
+  const batchLabel = isBoth
+    ? `1.Batch-3 & Batch-4:-`
+    : `1.Batch-${r.batchNumber}:-`;
 
   return `Hi Varaprasad Sir and Vineetha Mam,
 
