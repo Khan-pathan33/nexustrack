@@ -15,7 +15,7 @@ let customBatches = [
     id: '4',
     name: 'Batch 4 — Web Development Foundation',
     track: 'Modern Web, HTML5 Semantics, Responsive UI',
-    traineeCount: 9,
+    traineeCount: 7,
     status: 'In Progress',
     startDate: '2026-01-15',
     lead: 'Pathan Nafisa Khanam',

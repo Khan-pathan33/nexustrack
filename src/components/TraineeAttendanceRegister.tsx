@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   Clock, CheckCircle2, AlertTriangle, LogIn, LogOut, Mail, Send,
-  RefreshCw, Check, X, Shield, User, Filter, AlertCircle, Sparkles
+  RefreshCw, Check, X, Shield, User, Filter, AlertCircle, Sparkles, Users
 } from 'lucide-react';
 import { useToast } from '@/components/Toast';
 import TraineeAbsenceNoticeModal from '@/components/TraineeAbsenceNoticeModal';
@@ -28,20 +28,30 @@ export interface AttendanceItem {
 interface TraineeAttendanceRegisterProps {
   batchNumber?: string;
   date?: string;
+  onBatchChange?: (batch: string) => void;
 }
 
 export default function TraineeAttendanceRegister({
   batchNumber = '3',
   date = new Date().toISOString().split('T')[0],
+  onBatchChange,
 }: TraineeAttendanceRegisterProps) {
   const { success: toastSuccess, error: toastError, info: toastInfo } = useToast();
 
+  const [activeBatch, setActiveBatch] = useState<string>(batchNumber || '3');
   const [records, setRecords] = useState<AttendanceItem[]>([]);
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [graceMinutes, setGraceMinutes] = useState<15 | 20>(15);
   const [selectedForNotice, setSelectedForNotice] = useState<any | null>(null);
   const [currentTime, setCurrentTime] = useState<string>('');
+
+  // Sync internal activeBatch with external prop
+  useEffect(() => {
+    if (batchNumber && batchNumber !== activeBatch) {
+      setActiveBatch(batchNumber);
+    }
+  }, [batchNumber]);
 
   // Update live clock
   useEffect(() => {
@@ -63,7 +73,7 @@ export default function TraineeAttendanceRegister({
   const fetchAttendance = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/attendance?date=${date}&batch=${batchNumber}&grace=${graceMinutes}`);
+      const res = await fetch(`/api/attendance?date=${date}&batch=${activeBatch}&grace=${graceMinutes}`);
       if (res.ok) {
         const data = await res.json();
         setRecords(data.records || []);
@@ -74,11 +84,16 @@ export default function TraineeAttendanceRegister({
     } finally {
       setLoading(false);
     }
-  }, [date, batchNumber, graceMinutes]);
+  }, [date, activeBatch, graceMinutes]);
 
   useEffect(() => {
     fetchAttendance();
   }, [fetchAttendance]);
+
+  const handleSelectBatch = (b: string) => {
+    setActiveBatch(b);
+    onBatchChange?.(b);
+  };
 
   const handlePunchLogin = async (traineeId: string, traineeName: string) => {
     try {
@@ -89,7 +104,7 @@ export default function TraineeAttendanceRegister({
           action: 'login',
           traineeId,
           date,
-          batch: batchNumber,
+          batch: activeBatch,
           graceMinutes,
         }),
       });
@@ -112,7 +127,7 @@ export default function TraineeAttendanceRegister({
           action: 'logout',
           traineeId,
           date,
-          batch: batchNumber,
+          batch: activeBatch,
         }),
       });
 
@@ -134,7 +149,7 @@ export default function TraineeAttendanceRegister({
           action: 'toggle-gm',
           traineeId,
           date,
-          batch: batchNumber,
+          batch: activeBatch,
         }),
       });
 
@@ -150,6 +165,81 @@ export default function TraineeAttendanceRegister({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      {/* Batch Switcher Banner for Separate Attendance Tracking */}
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: 12,
+          padding: '12px 18px',
+          background: 'rgba(15, 23, 42, 0.75)',
+          borderRadius: 14,
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+          <span style={{ fontSize: 13, fontWeight: 700, color: '#94a3b8' }}>
+            Active Attendance Cohort:
+          </span>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button
+              type="button"
+              onClick={() => handleSelectBatch('3')}
+              style={{
+                padding: '8px 16px',
+                borderRadius: 8,
+                border: activeBatch === '3' ? '1px solid #38bdf8' : '1px solid rgba(255, 255, 255, 0.1)',
+                background:
+                  activeBatch === '3'
+                    ? 'linear-gradient(135deg, rgba(2, 132, 199, 0.4), rgba(14, 165, 233, 0.2))'
+                    : 'rgba(255, 255, 255, 0.03)',
+                color: activeBatch === '3' ? '#38bdf8' : '#94a3b8',
+                fontWeight: 700,
+                fontSize: 12,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                transition: 'all 0.15s ease',
+              }}
+            >
+              <Users size={14} />
+              <span>Batch 3 Attendance (6 Active Trainees)</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleSelectBatch('4')}
+              style={{
+                padding: '8px 16px',
+                borderRadius: 8,
+                border: activeBatch === '4' ? '1px solid #a855f7' : '1px solid rgba(255, 255, 255, 0.1)',
+                background:
+                  activeBatch === '4'
+                    ? 'linear-gradient(135deg, rgba(147, 51, 234, 0.4), rgba(168, 85, 247, 0.2))'
+                    : 'rgba(255, 255, 255, 0.03)',
+                color: activeBatch === '4' ? '#c084fc' : '#94a3b8',
+                fontWeight: 700,
+                fontSize: 12,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                transition: 'all 0.15s ease',
+              }}
+            >
+              <Users size={14} />
+              <span>Batch 4 Attendance (7 Active Trainees)</span>
+            </button>
+          </div>
+        </div>
+
+        <div style={{ fontSize: 12, color: '#64748b' }}>
+          Separate Tracker: <strong style={{ color: activeBatch === '3' ? '#38bdf8' : '#c084fc' }}>Batch {activeBatch} Active Roster</strong>
+        </div>
+      </div>
       {/* Policy & Punctuality Bar */}
       <div
         style={{

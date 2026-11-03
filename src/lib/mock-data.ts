@@ -334,6 +334,84 @@ export const mockTrainees: TraineeData[] = [
     avatar: '👨‍💻',
     joinedDate: '2025-12-15',
   },
+  // ── Batch 4 Active Trainees ──
+  {
+    _id: 'b4_trainee_adinarayana',
+    name: 'Adinarayana Meesala',
+    email: 'adinarayana.meesala@nybinfotech.com',
+    department: 'Batch 4 Web Dev',
+    skills: ['HTML5', 'CSS Grid', 'Flexbox', 'Responsive Design', 'JavaScript'],
+    overallScore: 48,
+    status: 'active',
+    avatar: '👨‍💻',
+    joinedDate: '2026-01-15',
+  },
+  {
+    _id: 'b4_trainee_adithya',
+    name: 'Adithya Ram',
+    email: 'adithya.ram@nybinfotech.com',
+    department: 'Batch 4 Web Dev',
+    skills: ['HTML5 Semantics', 'CSS3', 'JavaScript Functions', 'DOM Events'],
+    overallScore: 45,
+    status: 'active',
+    avatar: '👨‍💻',
+    joinedDate: '2026-01-15',
+  },
+  {
+    _id: 'b4_trainee_jose',
+    name: 'Jose Amala Kishor',
+    email: 'jose.amala@nybinfotech.com',
+    department: 'Batch 4 Web Dev',
+    skills: ['HTML5', 'CSS Flexbox', 'JavaScript Arrays', 'Git & GitHub'],
+    overallScore: 44,
+    status: 'active',
+    avatar: '👨‍💻',
+    joinedDate: '2026-01-15',
+  },
+  {
+    _id: 'b4_trainee_snehith',
+    name: 'Snehith Reddy Challa',
+    email: 'snehith.reddy@nybinfotech.com',
+    department: 'Batch 4 Web Dev',
+    skills: ['HTML5 Forms', 'CSS Grid', 'JavaScript ES6', 'DOM API'],
+    overallScore: 42,
+    status: 'active',
+    avatar: '👨‍💻',
+    joinedDate: '2026-01-15',
+  },
+  {
+    _id: 'b4_trainee_sruthi',
+    name: 'Sruthi Badavath',
+    email: 'sruthi.badavath@nybinfotech.com',
+    department: 'Batch 4 Web Dev',
+    skills: ['HTML5', 'CSS Layouts', 'Responsive UI', 'JavaScript Basics'],
+    overallScore: 46,
+    status: 'active',
+    avatar: '👩‍💻',
+    joinedDate: '2026-01-15',
+  },
+  {
+    _id: 'b4_trainee_nikhil',
+    name: 'Nikhil Kumar Kurapati',
+    email: 'nikhil.kumar@nybinfotech.com',
+    department: 'Batch 4 Web Dev',
+    skills: ['HTML5 Semantics', 'CSS Styling', 'JavaScript Logic', 'Web Forms'],
+    overallScore: 40,
+    status: 'active',
+    avatar: '👨‍💻',
+    joinedDate: '2026-01-15',
+  },
+  {
+    _id: 'b4_trainee_ramesh',
+    name: 'Ramesh Kumar A',
+    email: 'ramesh.kumar@nybinfotech.com',
+    department: 'Batch 4 Web Dev',
+    skills: ['HTML5', 'CSS Flexbox & Grid', 'JavaScript Arrays', 'Object Modeling'],
+    overallScore: 43,
+    status: 'active',
+    avatar: '👨‍💻',
+    joinedDate: '2026-01-15',
+  },
 ];
 
 // ── 11 Authentic Assessment-1 Results from Batch-3_Assessment-1_Result_16-06-2026.xlsx ──
@@ -613,14 +691,15 @@ declare global {
   } | undefined;
 }
 
-// Reset store if legacy data (e.g. fewer than 11 trainees or Sana not active) is detected
+// Reset store if legacy data (fewer than 18 trainees or missing Batch 4 trainees) is detected
 const isOutdatedStore =
   !globalThis.__nexusStore ||
   !globalThis.__nexusStore.trainees ||
-  globalThis.__nexusStore.trainees.length < 11 ||
+  globalThis.__nexusStore.trainees.length < 18 ||
+  !globalThis.__nexusStore.trainees.some((t) => t.name === 'Nikhil Kumar Kurapati') ||
+  !globalThis.__nexusStore.trainees.some((t) => t.name === 'Adinarayana Meesala') ||
   globalThis.__nexusStore.trainees.some((t) => t.name === 'Ahmed Ali' || t.name === 'Alex Rivera' || t.name === 'Elena Rostova') ||
   globalThis.__nexusStore.trainees.some((t) => t.name === 'Sana Sulthana' && t.status !== 'active') ||
-  globalThis.__nexusStore.trainees.some((t) => t.name === 'Chevva Vinay Kumar' && t.status === 'on-leave') ||
   globalThis.__nexusStore.assessments?.some((a) => a.score > 50);
 
 if (isOutdatedStore) {

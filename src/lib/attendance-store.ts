@@ -85,6 +85,16 @@ export const ACTIVE_BATCH_3_TRAINEES = [
   'Tejaswar Rao',
 ];
 
+export const ACTIVE_BATCH_4_TRAINEES = [
+  'Adinarayana Meesala',
+  'Adithya Ram',
+  'Jose Amala Kishor',
+  'Snehith Reddy Challa',
+  'Sruthi Badavath',
+  'Nikhil Kumar Kurapati',
+  'Ramesh Kumar A',
+];
+
 /**
  * Retrieve or initialize attendance records for a given date
  */
@@ -95,10 +105,18 @@ export function getOrCreateAttendanceForDate(
   const cacheKey = `${dateStr}_b${batchFilter}`;
 
   if (attendanceCache[cacheKey]) {
-    // Invalidate stale cache if it contains outdated leave status or incorrect trainee count
+    // Invalidate stale cache if trainee count doesn't match the respective active batch cohort
+    const expectedCount =
+      batchFilter === '3'
+        ? ACTIVE_BATCH_3_TRAINEES.length
+        : batchFilter === '4'
+        ? ACTIVE_BATCH_4_TRAINEES.length
+        : 0;
+
     const isStale =
       attendanceCache[cacheKey].some(r => r.traineeName === 'Sana Sulthana' && r.status === 'on-leave') ||
-      (batchFilter === '3' && attendanceCache[cacheKey].length !== ACTIVE_BATCH_3_TRAINEES.length);
+      (expectedCount > 0 && attendanceCache[cacheKey].length !== expectedCount);
+
     if (isStale) {
       delete attendanceCache[cacheKey];
     }
@@ -111,11 +129,68 @@ export function getOrCreateAttendanceForDate(
       if (batchFilter === '3') {
         return ACTIVE_BATCH_3_TRAINEES.includes(t.name);
       }
+      if (batchFilter === '4') {
+        return ACTIVE_BATCH_4_TRAINEES.includes(t.name) || t.department?.includes('Batch 4');
+      }
       return t.department?.includes(`Batch ${batchFilter}`);
     });
 
     // Provide authentic initial data with realistic morning punch timestamps
     const initialRecords: AttendanceRecord[] = cohortTrainees.map((t, idx) => {
+      if (batchFilter === '4') {
+        // Specific realistic attendance scenario for Batch 4 (Nikhil and Ramesh away)
+        if (t.name === 'Nikhil Kumar Kurapati' || t.name === 'Ramesh Kumar A') {
+          return {
+            _id: genId(),
+            traineeId: t._id,
+            traineeName: t.name,
+            traineeEmail: t.email,
+            batchNumber: '4',
+            date: dateStr,
+            loginTime: '',
+            logoutTime: '',
+            status: 'absent',
+            goodMorningSent: false,
+            absenceNoticeSent: false,
+            minutesLate: 0,
+            remarks: 'Pending login verification.',
+          };
+        } else if (idx === 2 || idx === 3) {
+          return {
+            _id: genId(),
+            traineeId: t._id,
+            traineeName: t.name,
+            traineeEmail: t.email,
+            batchNumber: '4',
+            date: dateStr,
+            loginTime: `09:0${5 + (idx - 2) * 3} AM`,
+            logoutTime: '',
+            status: 'grace-period',
+            goodMorningSent: true,
+            absenceNoticeSent: false,
+            minutesLate: 5 + (idx - 2) * 3,
+            remarks: 'Logged in within grace period.',
+          };
+        } else {
+          return {
+            _id: genId(),
+            traineeId: t._id,
+            traineeName: t.name,
+            traineeEmail: t.email,
+            batchNumber: '4',
+            date: dateStr,
+            loginTime: `08:5${2 + (idx % 2) * 4} AM`,
+            logoutTime: '',
+            status: 'on-time',
+            goodMorningSent: true,
+            absenceNoticeSent: false,
+            minutesLate: 0,
+            remarks: 'Logged in before 9:00 AM.',
+          };
+        }
+      }
+
+      // Default Batch 3 logic
       if (idx === 0 || idx === 1) {
         // On Time (08:52 AM, 08:55 AM)
         return {
