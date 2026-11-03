@@ -3,13 +3,14 @@
 import React, { useState, useMemo } from 'react';
 import {
   Users, Plus, Search, Filter, Award, GitBranch, Edit, Trash2,
-  CheckCircle, Clock, AlertCircle, X, Shield, Sparkles, BookOpen, User, Mail
+  CheckCircle, Clock, AlertCircle, X, Shield, Sparkles, BookOpen, User, Mail, ExternalLink
 } from 'lucide-react';
 import { useToast } from '@/components/Toast';
 import TraineeReportCardModal from '@/components/TraineeReportCardModal';
 import GithubCommitValidatorModal from '@/components/GithubCommitValidatorModal';
 import TraineeAttendanceRegister from '@/components/TraineeAttendanceRegister';
 import TraineeAbsenceNoticeModal from '@/components/TraineeAbsenceNoticeModal';
+import { getTraineeGithubInfo } from '@/lib/trainee-github-map';
 
 
 export interface TraineeData {
@@ -22,6 +23,9 @@ export interface TraineeData {
   status: 'active' | 'completed' | 'on-leave';
   avatar: string;
   joinedDate: string;
+  githubUsername?: string;
+  githubUrl?: string;
+  defaultRepo?: string;
 }
 
 interface TraineeBatchManagerProps {
@@ -446,6 +450,35 @@ export default function TraineeBatchManager({ trainees, onRefresh }: TraineeBatc
                       {t.name}
                     </h4>
                     <span style={{ fontSize: 11, color: '#64748b' }}>{t.email}</span>
+                    {(() => {
+                      const gh = t.githubUsername
+                        ? { username: t.githubUsername, githubUrl: t.githubUrl || `https://github.com/${t.githubUsername}` }
+                        : getTraineeGithubInfo(t.name);
+                      if (gh) {
+                        return (
+                          <div style={{ marginTop: 2 }}>
+                            <a
+                              href={gh.githubUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: 3,
+                                fontSize: 10,
+                                color: '#38bdf8',
+                                textDecoration: 'none',
+                                fontWeight: 600,
+                              }}
+                            >
+                              <ExternalLink size={9} />
+                              <span>@{gh.username}</span>
+                            </a>
+                          </div>
+                        );
+                      }
+                      return null;
+                    })()}
                   </div>
                 </div>
 
@@ -530,12 +563,13 @@ export default function TraineeBatchManager({ trainees, onRefresh }: TraineeBatc
 
                 <button
                   type="button"
-                  onClick={() =>
+                  onClick={() => {
+                    const gh = getTraineeGithubInfo(t.name);
                     setSelectedTraineeForGh({
-                      username: t.name.toLowerCase().replace(/\s+/g, '-'),
-                      repo: 'frontend-tracker',
-                    })
-                  }
+                      username: t.githubUsername || gh?.username || t.name.toLowerCase().replace(/\s+/g, '-'),
+                      repo: t.defaultRepo || gh?.defaultRepo || 'NYB',
+                    });
+                  }}
                   className="btn btn-secondary btn-sm"
                   style={{ fontSize: 11, gap: 5, padding: '5px 10px' }}
                   title="Audit Trainee GitHub Commits with Gemini AI"

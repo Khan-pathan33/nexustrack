@@ -36,6 +36,16 @@ export interface TraineeData {
   status: 'active' | 'completed' | 'on-leave';
   avatar: string;
   joinedDate: string;
+  githubUsername?: string;
+  githubUrl?: string;
+  defaultRepo?: string;
+  lastGithubCheck?: {
+    checkedAt: string;
+    hasPushedToday: boolean;
+    commitCount: number;
+    latestRepo?: string;
+    latestCommitMessage?: string;
+  };
 }
 
 export interface AssessmentData {
@@ -223,6 +233,9 @@ export const mockTrainees: TraineeData[] = [
     status: 'active',
     avatar: '👩‍💻',
     joinedDate: '2025-12-01',
+    githubUsername: 'SanaSulthana2325',
+    githubUrl: 'https://github.com/SanaSulthana2325',
+    defaultRepo: 'NYB',
   },
   {
     _id: tAlthaf,
@@ -234,6 +247,9 @@ export const mockTrainees: TraineeData[] = [
     status: 'active',
     avatar: '👨‍💻',
     joinedDate: '2025-12-10',
+    githubUsername: 'MahammadAlthaf2002',
+    githubUrl: 'https://github.com/MahammadAlthaf2002',
+    defaultRepo: 'NYBINFOTECH-1',
   },
   {
     _id: tVinay,
@@ -267,6 +283,9 @@ export const mockTrainees: TraineeData[] = [
     status: 'active',
     avatar: '👨‍💻',
     joinedDate: '2025-12-29',
+    githubUsername: 'GirishNYBinfotech',
+    githubUrl: 'https://github.com/GirishNYBinfotech',
+    defaultRepo: 'NYB_INFOTECH',
   },
   {
     _id: tTejaswar,
@@ -278,6 +297,9 @@ export const mockTrainees: TraineeData[] = [
     status: 'active',
     avatar: '👨‍💻',
     joinedDate: '2025-11-18',
+    githubUsername: 'Teja1911',
+    githubUrl: 'https://github.com/Teja1911',
+    defaultRepo: 'NYB',
   },
   {
     _id: tChandra,
@@ -289,6 +311,9 @@ export const mockTrainees: TraineeData[] = [
     status: 'active',
     avatar: '👨‍💻',
     joinedDate: '2025-12-14',
+    githubUsername: 'kammarichandra',
+    githubUrl: 'https://github.com/kammarichandra',
+    defaultRepo: 'Daily-status-update',
   },
   {
     _id: tMounika,
@@ -322,6 +347,9 @@ export const mockTrainees: TraineeData[] = [
     status: 'active',
     avatar: '👨‍💻',
     joinedDate: '2025-12-15',
+    githubUsername: 'Balakrishna3142',
+    githubUrl: 'https://github.com/Balakrishna3142',
+    defaultRepo: 'NYB',
   },
   {
     _id: tJaya,
@@ -691,13 +719,14 @@ declare global {
   } | undefined;
 }
 
-// Reset store if legacy data (fewer than 18 trainees or missing Batch 4 trainees) is detected
+// Reset store if legacy data (fewer than 18 trainees, missing Batch 4, or missing GitHub handles) is detected
 const isOutdatedStore =
   !globalThis.__nexusStore ||
   !globalThis.__nexusStore.trainees ||
   globalThis.__nexusStore.trainees.length < 18 ||
   !globalThis.__nexusStore.trainees.some((t) => t.name === 'Nikhil Kumar Kurapati') ||
   !globalThis.__nexusStore.trainees.some((t) => t.name === 'Adinarayana Meesala') ||
+  !globalThis.__nexusStore.trainees.some((t) => t.name === 'Althaf Syed' && t.githubUsername) ||
   globalThis.__nexusStore.trainees.some((t) => t.name === 'Ahmed Ali' || t.name === 'Alex Rivera' || t.name === 'Elena Rostova') ||
   globalThis.__nexusStore.trainees.some((t) => t.name === 'Sana Sulthana' && t.status !== 'active') ||
   globalThis.__nexusStore.assessments?.some((a) => a.score > 50);

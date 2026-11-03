@@ -19,6 +19,7 @@ import type { BatchTraineeRow } from '@/lib/generate-batch-report';
 import MissingTraineesModal from '@/components/MissingTraineesModal';
 import GithubCommitValidatorModal from '@/components/GithubCommitValidatorModal';
 import TraineeAbsenceNoticeModal from '@/components/TraineeAbsenceNoticeModal';
+import { getTraineeGithubInfo } from '@/lib/trainee-github-map';
 
 
 
@@ -2465,6 +2466,7 @@ export default function DailyTrackerView({ trackers = [], onRefresh }: { tracker
   const [showMissingModal, setShowMissingModal] = useState(false);
   const [selectedGhTrainee, setSelectedGhTrainee] = useState<{ username: string; repo: string } | null>(null);
   const [selectedTraineeForAttendanceNotice, setSelectedTraineeForAttendanceNotice] = useState<any | null>(null);
+  const [scanningGithub, setScanningGithub] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const tabsScrollRef = useRef<HTMLDivElement>(null);
 
@@ -2745,6 +2747,53 @@ export default function DailyTrackerView({ trackers = [], onRefresh }: { tracker
       toastError('Network Error', `Could not communicate with ${providerLabel} scan service`);
     } finally {
       setScanningMail(false);
+    }
+  };
+
+  const handleScanBatchGithub = async () => {
+    setScanningGithub(true);
+    toastAi('⚡ Scanning GitHub Activity', `Checking live commits for Batch ${selectedBatch} trainees on GitHub...`);
+
+    try {
+      const res = await fetch(`/api/github/scan-batch?batch=${selectedBatch}&targetDate=${selectedSheetDate}`);
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setEditableRows((prev) => {
+          const updated = prev.map((r) => {
+            const found = data.results?.find((resItem: any) =>
+              resItem.traineeName.toLowerCase() === r.name.toLowerCase() ||
+              r.name.toLowerCase().includes(resItem.traineeName.toLowerCase()) ||
+              resItem.traineeName.toLowerCase().includes(r.name.toLowerCase())
+            );
+            if (found) {
+              return {
+                ...r,
+                githubPushStatus: found.githubPushStatus,
+              };
+            }
+            return r;
+          });
+
+          if (typeof window !== 'undefined') {
+            try {
+              localStorage.setItem(`nexus_batch${selectedBatch}_sheet_${selectedSheetDate}`, JSON.stringify(updated));
+            } catch (e) {}
+          }
+          return updated;
+        });
+
+        setHasUnsavedChanges(true);
+        toastSuccess(
+          'GitHub Push Status Updated',
+          `Scanned ${data.totalTrainees} trainee accounts: ${data.pushedCount} pushed code today. Tracker updated!`
+        );
+      } else {
+        toastError('GitHub Scan Failed', data.error || 'Failed to scan GitHub accounts');
+      }
+    } catch {
+      toastError('Network Error', 'Could not communicate with GitHub scanner service');
+    } finally {
+      setScanningGithub(false);
     }
   };
 
@@ -3419,6 +3468,33 @@ export default function DailyTrackerView({ trackers = [], onRefresh }: { tracker
                 : selectedEmailProvider === 'outlook'
                 ? 'Sync Outlook'
                 : 'Sync Both'}
+            </button>
+
+            {/* Daily Trainee GitHub Activity Check Button */}
+            <button
+              type="button"
+              onClick={handleScanBatchGithub}
+              disabled={scanningGithub}
+              className="btn btn-sm"
+              style={{
+                fontSize: 12,
+                gap: 6,
+                background: 'linear-gradient(135deg, #090d16, #1e293b)',
+                border: '1px solid rgba(56, 189, 248, 0.45)',
+                color: '#38bdf8',
+                fontWeight: 700,
+                padding: '7px 14px',
+                borderRadius: 8,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                boxShadow: '0 4px 14px rgba(2, 132, 199, 0.25)',
+                transition: 'all 0.2s ease',
+              }}
+              title="Daily check trainee GitHub commits and automatically update tracker push status"
+            >
+              <GitBranch size={13} className={scanningGithub ? 'spin' : ''} />
+              <span>{scanningGithub ? 'Checking GitHub...' : '⚡ Daily GitHub Check'}</span>
             </button>
 
             {/* Save Changes */}
@@ -4422,23 +4498,60 @@ export default function DailyTrackerView({ trackers = [], onRefresh }: { tracker
                       {r.sNo}
                     </td>
 
-                    {/* Name */}
+                    {/* Name + GitHub Profile Tag */}
                     <td
-                      contentEditable
-                      suppressContentEditableWarning
-                      onBlur={(e) => handleCellBlur(r.sNo, 'name', e.currentTarget.textContent || '')}
                       style={{
                         padding: '8px 10px',
                         border: '1px solid #e2e8f0',
-                        fontWeight: 700,
-                        color: '#0f172a',
                         whiteSpace: 'nowrap',
-                        outline: 'none',
-                        cursor: 'text',
                       }}
-                      title="Click to edit name"
                     >
-                      {r.name}
+                      <div
+                        contentEditable
+                        suppressContentEditableWarning
+                        onBlur={(e) => handleCellBlur(r.sNo, 'name', e.currentTarget.textContent || '')}
+                        style={{
+                          fontWeight: 700,
+                          color: '#0f172a',
+                          outline: 'none',
+                          cursor: 'text',
+                        }}
+                        title="Click to edit name"
+                      >
+                        {r.name}
+                      </div>
+                      {(() => {
+                        const gh = getTraineeGithubInfo(r.name);
+                        if (gh) {
+                          return (
+                            <div style={{ marginTop: 3 }}>
+                              <a
+                                href={gh.githubUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: 4,
+                                  fontSize: 10,
+                                  color: '#0284c7',
+                                  textDecoration: 'none',
+                                  fontWeight: 600,
+                                  background: 'rgba(2, 132, 199, 0.08)',
+                                  padding: '1px 6px',
+                                  borderRadius: 4,
+                                  border: '1px solid rgba(2, 132, 199, 0.25)',
+                                }}
+                                title={`Open ${gh.username}'s GitHub (${gh.defaultRepo})`}
+                              >
+                                <ExternalLink size={9} />
+                                <span>@{gh.username}</span>
+                              </a>
+                            </div>
+                          );
+                        }
+                        return null;
+                      })()}
                     </td>
 
                     {/* Pending Topics */}
@@ -4534,25 +4647,55 @@ export default function DailyTrackerView({ trackers = [], onRefresh }: { tracker
                       {r.discussionSummary}
                     </td>
 
-                    {/* GitHub Push Status (Toggleable Badge) */}
+                    {/* GitHub Push Status (Toggleable Badge & Commit Audit) */}
                     <td style={{ padding: '8px 10px', border: '1px solid #e2e8f0', textAlign: 'center' }}>
-                      <button
-                        type="button"
-                        onClick={() => handleQuickToggle(r.sNo, 'githubPushStatus')}
-                        title="Click to toggle Yes / No / On Leave"
-                        style={{
-                          padding: '3px 8px',
-                          borderRadius: 4,
-                          fontSize: 11,
-                          fontWeight: 700,
-                          border: 'none',
-                          cursor: 'pointer',
-                          background: r.githubPushStatus === 'Yes' ? '#dcfce7' : r.githubPushStatus === 'No' ? '#fee2e2' : '#fef3c7',
-                          color: r.githubPushStatus === 'Yes' ? '#166534' : r.githubPushStatus === 'No' ? '#991b1b' : '#92400e',
-                        }}
-                      >
-                        {r.githubPushStatus}
-                      </button>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                        <button
+                          type="button"
+                          onClick={() => handleQuickToggle(r.sNo, 'githubPushStatus')}
+                          title="Click to toggle Yes / No / On Leave"
+                          style={{
+                            padding: '3px 8px',
+                            borderRadius: 4,
+                            fontSize: 11,
+                            fontWeight: 700,
+                            border: 'none',
+                            cursor: 'pointer',
+                            background: r.githubPushStatus === 'Yes' ? '#dcfce7' : r.githubPushStatus === 'No' ? '#fee2e2' : '#fef3c7',
+                            color: r.githubPushStatus === 'Yes' ? '#166534' : r.githubPushStatus === 'No' ? '#991b1b' : '#92400e',
+                          }}
+                        >
+                          {r.githubPushStatus}
+                        </button>
+                        {(() => {
+                          const gh = getTraineeGithubInfo(r.name);
+                          if (gh) {
+                            return (
+                              <button
+                                type="button"
+                                onClick={() => setSelectedGhTrainee({ username: gh.username, repo: gh.defaultRepo })}
+                                style={{
+                                  background: 'none',
+                                  border: 'none',
+                                  color: '#6366f1',
+                                  fontSize: 10,
+                                  fontWeight: 600,
+                                  cursor: 'pointer',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: 2,
+                                  padding: 0,
+                                }}
+                                title={`Audit ${gh.username}/${gh.defaultRepo} commits`}
+                              >
+                                <GitBranch size={9} />
+                                <span>Audit</span>
+                              </button>
+                            );
+                          }
+                          return null;
+                        })()}
+                      </div>
                     </td>
 
                     {/* Email Review Status */}
