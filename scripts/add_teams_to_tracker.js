@@ -83,3 +83,4 @@ if (!content.includes('<TeamsSetupModal')) {
 
 fs.writeFileSync(targetPath, content, 'utf8');
 console.log('Successfully injected Teams integration into DailyTrackerView.tsx!');
+

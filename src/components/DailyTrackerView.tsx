@@ -3408,6 +3408,9 @@ export default function DailyTrackerView({ trackers = [], onRefresh }: { tracker
               <GitBranch size={13} className={scanningGithub ? 'spin' : ''} />
               <span>{scanningGithub ? 'Auditing GitHub...' : '⚡ Audit GitHub Tasks'}</span>
             </button>
+
+            
+
             {/* Microsoft Teams Attendance & Login Operations */}
             <button
               type="button"
@@ -5913,6 +5916,7 @@ export default function DailyTrackerView({ trackers = [], onRefresh }: { tracker
         trainee={selectedTraineeForAttendanceNotice}
         date={selectedSheetDate}
       />
+
       {/* Microsoft Teams Operations Modal */}
       <TeamsSetupModal
         isOpen={showTeamsModal}
