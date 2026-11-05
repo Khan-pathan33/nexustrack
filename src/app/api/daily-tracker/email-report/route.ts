@@ -296,6 +296,13 @@ export async function POST(req: NextRequest) {
           ];
 
           for (const att of attachments) {
+            const rawB64 = Buffer.isBuffer(att.content)
+              ? att.content.toString('base64')
+              : Buffer.from(att.content).toString('base64');
+            // RFC 2045 / RFC 5322: Base64 lines must not exceed 76 characters.
+            // Google Mail rejects emails with unchunked base64 lines exceeding 998 characters (552-5.7.0 error).
+            const chunkedB64 = rawB64.replace(/(.{76})/g, '$1\r\n');
+
             rawMimeParts.push(
               ``,
               `--${boundary}`,
@@ -303,7 +310,7 @@ export async function POST(req: NextRequest) {
               `Content-Transfer-Encoding: base64`,
               `Content-Disposition: attachment; filename="${att.filename}"`,
               ``,
-              Buffer.isBuffer(att.content) ? att.content.toString('base64') : Buffer.from(att.content).toString('base64')
+              chunkedB64
             );
           }
 

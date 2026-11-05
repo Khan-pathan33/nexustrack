@@ -6,7 +6,7 @@ import {
   ChevronLeft, ChevronRight, Copy, Download, ExternalLink, File,
   FileSpreadsheet, Folder, FolderOpen, Mail, Paperclip, Plus,
   RotateCcw, Save, Send, Shield, ShieldCheck, Sparkles, Trash,
-  Trash2, X, Zap, Bell, GitBranch, Clock, Settings
+  Trash2, X, Zap, Bell, GitBranch, Clock, Settings, MessageSquare
 } from 'lucide-react';
 import ExportPdfButton from '@/components/ExportPdfButton';
 import { useToast } from '@/components/Toast';
@@ -19,6 +19,7 @@ import type { BatchTraineeRow } from '@/lib/generate-batch-report';
 import MissingTraineesModal from '@/components/MissingTraineesModal';
 import GithubCommitValidatorModal from '@/components/GithubCommitValidatorModal';
 import TraineeAbsenceNoticeModal from '@/components/TraineeAbsenceNoticeModal';
+import TeamsSetupModal from '@/components/TeamsSetupModal';
 import { getTraineeGithubInfo } from '@/lib/trainee-github-map';
 
 
@@ -2246,6 +2247,7 @@ export default function DailyTrackerView({ trackers = [], onRefresh }: { tracker
 
   // Credentials & Excel Password Modal State
   const [showCredsModal, setShowCredsModal] = useState(false);
+  const [showTeamsModal, setShowTeamsModal] = useState(false);
 
   // Mail Scanning & Auto-Audit State (1-Minute Interval, Corrections routed to nafisakhanampathan65@gmail.com)
   const [scanningMail, setScanningMail] = useState(false);
@@ -3405,6 +3407,31 @@ export default function DailyTrackerView({ trackers = [], onRefresh }: { tracker
             >
               <GitBranch size={13} className={scanningGithub ? 'spin' : ''} />
               <span>{scanningGithub ? 'Auditing GitHub...' : '⚡ Audit GitHub Tasks'}</span>
+            </button>
+            {/* Microsoft Teams Attendance & Login Operations */}
+            <button
+              type="button"
+              onClick={() => setShowTeamsModal(true)}
+              className="btn btn-sm"
+              style={{
+                fontSize: 12,
+                gap: 6,
+                background: 'linear-gradient(135deg, #5B5FC7, #444791)',
+                border: '1px solid rgba(165, 180, 252, 0.4)',
+                color: '#ffffff',
+                fontWeight: 700,
+                padding: '7px 14px',
+                borderRadius: 8,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                boxShadow: '0 4px 14px rgba(91, 95, 199, 0.35)',
+                transition: 'all 0.2s ease',
+              }}
+              title="Microsoft Teams 9:00 AM Login & Absence Operations (NYB Infotech)"
+            >
+              <MessageSquare size={13} />
+              <span>💬 Teams</span>
             </button>
 
             {/* Save Changes */}
@@ -5885,6 +5912,14 @@ export default function DailyTrackerView({ trackers = [], onRefresh }: { tracker
         onClose={() => setSelectedTraineeForAttendanceNotice(null)}
         trainee={selectedTraineeForAttendanceNotice}
         date={selectedSheetDate}
+      />
+      {/* Microsoft Teams Operations Modal */}
+      <TeamsSetupModal
+        isOpen={showTeamsModal}
+        onClose={() => setShowTeamsModal(false)}
+        batchNumber={selectedBatch}
+        date={selectedSheetDate}
+        onAttendanceUpdated={onRefresh}
       />
     </div>
   );

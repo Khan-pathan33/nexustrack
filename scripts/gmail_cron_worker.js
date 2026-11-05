@@ -692,7 +692,7 @@ async function autoGenerateTLReportDraft(coordinator, submissions) {
               'Content-Transfer-Encoding: base64',
               `Content-Disposition: attachment; filename="${coordinator.excelFilename}"`,
               '',
-              excelBuffer.toString('base64'),
+              excelBuffer.toString('base64').replace(/(.{76})/g, '$1\r\n'),
               '',
             ].join('\r\n')
           : '',
@@ -746,7 +746,7 @@ async function autoGenerateTLReportDraft(coordinator, submissions) {
               `Content-Transfer-Encoding: base64`,
               `Content-Disposition: attachment; filename="${coordinator.excelFilename}"`,
               ``,
-              excelBuffer.toString('base64'),
+              excelBuffer.toString('base64').replace(/(.{76})/g, '$1\r\n'),
               ``,
             ].join('\r\n')
           : '',

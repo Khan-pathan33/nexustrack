@@ -98,6 +98,13 @@ const OCT_SHEETS_CONFIG = [
     topics: `Full Application Testing, Polish & Deployment\n\nTopics Covered:\n• Unit and component testing with Vitest / React Testing Library\n• Cross-browser responsive design testing & accessibility (a11y)\n• Error logging, monitoring, and production deployment preparation\n• Technical mentoring revision & daily status report consolidation`,
     tasks: `Assigned Tasks:\n• Write component test cases for critical user journeys\n• Verify responsive layout across mobile, tablet, and desktop\n• Push final clean repository to GitHub\n• Submit consolidated daily status report with full evaluation remarks`,
     summary: 'Completed component testing, responsive polish, and final code push.'
+  },
+  {
+    date: '03-11-2026',
+    title: 'Props, State & Component Communication',
+    topics: `Props, State & Component Communication\n\nTopics Covered:\n• Props, State & useState Hook\n• Parent-Child Component Data Flow & Callback Communication\n• Multi-Level Component Hierarchy & Passing Functions as Props\n• Conditional Rendering (Ternary, &&, if-else)`,
+    tasks: `Assigned Tasks:\n• Implement parent-to-child data flow using Props\n• Send data from child to parent using callback functions\n• Manage component state using useState hook\n• Mini Assignment: Interactive Product Management UI (List, Details, Add, Edit, Delete)\n• Mandatory: Code push to GitHub and daily status submission before 6:00 PM`,
+    summary: 'Completed Props, State management, and component communication.'
   }
 ];
 
@@ -249,6 +256,43 @@ function buildWorksheet(sheet, cfg, batchNum, traineesList) {
         selfProject = 'Sunray Hospital website: continued responsive UI improvements.';
       } else if (traineeName === 'Chandra Shekar K') {
         selfProject = 'Employee Management System: role-based access & dashboard reports.';
+      }
+    }
+
+    // 03-11-2026 specific live audit results
+    if (cfg.date === '03-11-2026') {
+      if (batchNum === 3) {
+        if (traineeName === 'Chandra Shekar K') {
+          githubPush = 'Yes';
+          completedTopics = 'Yes - Completed Props, State & useState Hook with parent-child data flow';
+          discussionSummary = 'Committed practical task to GitHub repo Mini-Project: "03-11-2026" (18:26 IST). Code verified on GitHub.';
+          emailReview = 'Reviewed. Code verified on GitHub (Mini-Project: 03-11-2026).';
+        } else {
+          githubPush = 'Pending';
+          completedTopics = 'In Progress - Props and State management exercises';
+          discussionSummary = 'Practicing parent-child data flow and useState toggles. Code push pending for 03-11-2026.';
+          emailReview = 'Action Required: Missing daily GitHub push for 03-11-2026.';
+          pendingTopics = 'Pending evening GitHub push (Day 2 Props & State)';
+        }
+      } else if (batchNum === 4) {
+        if (traineeName === 'Jose Amala Kishor') {
+          githubPush = 'Yes';
+          completedTopics = 'Yes - Completed Props, State & useState Hook with parent-child data flow';
+          discussionSummary = 'Committed practical task to GitHub repo NYB_DailyTask: "React practice", "modified" (17:17 IST). Code verified on GitHub.';
+          emailReview = 'Reviewed. Code verified on GitHub (NYB_DailyTask: 2 commits).';
+        } else if (traineeName === 'Snehith Reddy Challa' || traineeName === 'Sruthi Badavath') {
+          githubPush = 'No';
+          completedTopics = 'No - Not received the mail';
+          discussionSummary = 'Not received the mail';
+          emailReview = 'Not received the mail';
+          pendingTopics = 'Not received the mail';
+        } else {
+          githubPush = 'Pending';
+          completedTopics = 'In Progress - Props, State & component communication';
+          discussionSummary = 'Practicing parent-child communication and useState toggles. Code push pending for 03-11-2026.';
+          emailReview = 'Action Required: Missing daily GitHub push for 03-11-2026.';
+          pendingTopics = 'Pending evening GitHub push (Day 2 Props & State)';
+        }
       }
     }
 

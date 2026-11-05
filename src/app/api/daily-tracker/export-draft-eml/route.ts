@@ -59,6 +59,8 @@ export async function GET(req: NextRequest) {
     ];
 
     for (const att of attachments) {
+      // RFC 2045 / RFC 5322 compliance: chunk Base64 at 76 characters to avoid 998-character line limit (Google 552-5.7.0 error)
+      const chunkedBase64 = att.buffer.toString('base64').replace(/(.{76})/g, '$1\r\n');
       emlParts.push(
         '',
         `--${boundary}`,
@@ -66,7 +68,7 @@ export async function GET(req: NextRequest) {
         'Content-Transfer-Encoding: base64',
         `Content-Disposition: attachment; filename="${att.filename}"`,
         '',
-        att.buffer.toString('base64')
+        chunkedBase64
       );
     }
 

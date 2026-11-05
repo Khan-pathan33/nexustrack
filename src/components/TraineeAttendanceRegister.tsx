@@ -3,10 +3,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   Clock, CheckCircle2, AlertTriangle, LogIn, LogOut, Mail, Send,
-  RefreshCw, Check, X, Shield, User, Filter, AlertCircle, Sparkles, Users
+  RefreshCw, Check, X, Shield, User, Filter, AlertCircle, Sparkles, Users, MessageSquare
 } from 'lucide-react';
 import { useToast } from '@/components/Toast';
 import TraineeAbsenceNoticeModal from '@/components/TraineeAbsenceNoticeModal';
+import TeamsSetupModal from '@/components/TeamsSetupModal';
 
 export interface AttendanceItem {
   _id: string;
@@ -44,6 +45,7 @@ export default function TraineeAttendanceRegister({
   const [loading, setLoading] = useState(false);
   const [graceMinutes, setGraceMinutes] = useState<15 | 20>(15);
   const [selectedForNotice, setSelectedForNotice] = useState<any | null>(null);
+  const [showTeamsModal, setShowTeamsModal] = useState(false);
   const [currentTime, setCurrentTime] = useState<string>('');
 
   // Sync internal activeBatch with external prop
@@ -342,6 +344,30 @@ export default function TraineeAttendanceRegister({
           </div>
 
           <button
+            onClick={() => setShowTeamsModal(true)}
+            type="button"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              padding: '6px 14px',
+              borderRadius: 8,
+              background: 'linear-gradient(135deg, #5B5FC7, #444791)',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+              color: '#ffffff',
+              fontSize: 12,
+              fontWeight: 700,
+              cursor: 'pointer',
+              boxShadow: '0 2px 10px rgba(91, 95, 199, 0.35)',
+              transition: 'all 0.15s ease',
+            }}
+            title="Open Microsoft Teams 9:00 AM Attendance & Login Operations"
+          >
+            <MessageSquare size={14} />
+            <span>💬 Teams Operations</span>
+          </button>
+
+          <button
             onClick={fetchAttendance}
             disabled={loading}
             className="btn btn-secondary btn-sm"
@@ -638,6 +664,15 @@ export default function TraineeAttendanceRegister({
         trainee={selectedForNotice}
         date={date}
         onNoticeSent={fetchAttendance}
+      />
+
+      {/* Microsoft Teams Operations Modal */}
+      <TeamsSetupModal
+        isOpen={showTeamsModal}
+        onClose={() => setShowTeamsModal(false)}
+        batchNumber={activeBatch}
+        date={date}
+        onAttendanceUpdated={fetchAttendance}
       />
     </div>
   );

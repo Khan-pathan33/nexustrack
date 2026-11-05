@@ -29,6 +29,8 @@ export interface StoredUser {
   excelPassword?: string;
   sharepointUrl?: string;
   tlEmail?: string;
+  teamsWebhookUrl?: string;
+  teamsChannelName?: string;
   hasCompletedOnboarding: boolean;
   createdAt?: string;
 }

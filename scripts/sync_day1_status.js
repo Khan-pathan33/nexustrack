@@ -419,7 +419,7 @@ I have attached the work progress files for your reference.
   console.log('4. Day 1 report HTML saved to:', reportHtmlPath);
 
   // Write Status_Report_26-10-2026.eml on Desktop
-  const excelBase64 = fs.readFileSync(desktopExcel).toString('base64');
+  const excelBase64 = fs.readFileSync(desktopExcel).toString('base64').replace(/(.{76})/g, '$1\r\n');
   const boundary = `----=_Part_${Date.now()}`;
   const emlContent = [
     'X-Unsent: 1',

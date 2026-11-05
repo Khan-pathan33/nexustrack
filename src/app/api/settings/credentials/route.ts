@@ -51,6 +51,8 @@ export async function GET() {
           sharepointUrl: userRecord.sharepointUrl || '',
           batch: batch,
           excelFilename: excelFilename,
+          teamsWebhookUrl: userRecord.teamsWebhookUrl || process.env.TEAMS_WEBHOOK_URL || '',
+          teamsChannelName: userRecord.teamsChannelName || process.env.TEAMS_CHANNEL_NAME || 'Technical Training - Cohort Standup',
           hasCompletedOnboarding: Boolean(userRecord.hasCompletedOnboarding),
         },
       });
@@ -93,6 +95,8 @@ export async function GET() {
         sharepointUrl,
         batch: '3',
         excelFilename: 'Technical Team batch-3_Daily_Status_Report.xlsx',
+        teamsWebhookUrl: process.env.TEAMS_WEBHOOK_URL || '',
+        teamsChannelName: process.env.TEAMS_CHANNEL_NAME || 'Technical Training - Cohort Standup',
         hasCompletedOnboarding: true,
       },
     });
@@ -122,6 +126,8 @@ export async function POST(req: NextRequest) {
       sharepointUrl,
       batch,
       excelFilename,
+      teamsWebhookUrl,
+      teamsChannelName,
     } = body;
 
     const userEmail = session?.user?.email?.toLowerCase().trim();
@@ -145,6 +151,8 @@ export async function POST(req: NextRequest) {
       if (excelPassword !== undefined) updateFields.excelPassword = excelPassword;
       if (tlEmail !== undefined) updateFields.tlEmail = tlEmail.trim();
       if (sharepointUrl !== undefined) updateFields.sharepointUrl = sharepointUrl.trim();
+      if (teamsWebhookUrl !== undefined) updateFields.teamsWebhookUrl = teamsWebhookUrl.trim();
+      if (teamsChannelName !== undefined) updateFields.teamsChannelName = teamsChannelName.trim();
       if (batch !== undefined) {
         const cleanBatch = String(batch).replace(/batch/gi, '').trim();
         updateFields.batch = cleanBatch;
@@ -173,6 +181,8 @@ export async function POST(req: NextRequest) {
       if (excelPassword !== undefined) process.env.EXCEL_PASSWORD = excelPassword;
       if (tlEmail !== undefined) process.env.TL_EMAIL = tlEmail;
       if (sharepointUrl !== undefined) process.env.SHAREPOINT_EXCEL_URL = sharepointUrl;
+      if (teamsWebhookUrl !== undefined) process.env.TEAMS_WEBHOOK_URL = teamsWebhookUrl;
+      if (teamsChannelName !== undefined) process.env.TEAMS_CHANNEL_NAME = teamsChannelName;
 
       try {
         const envPath = path.join(process.cwd(), '.env.local');
@@ -202,6 +212,8 @@ export async function POST(req: NextRequest) {
           if (excelPassword !== undefined) updateKey('EXCEL_PASSWORD', excelPassword);
           if (tlEmail !== undefined) updateKey('TL_EMAIL', tlEmail);
           if (sharepointUrl !== undefined) updateKey('SHAREPOINT_EXCEL_URL', sharepointUrl);
+          if (teamsWebhookUrl !== undefined) updateKey('TEAMS_WEBHOOK_URL', teamsWebhookUrl);
+          if (teamsChannelName !== undefined) updateKey('TEAMS_CHANNEL_NAME', teamsChannelName);
 
           fs.writeFileSync(envPath, envContent.trim() + '\n', 'utf8');
         }

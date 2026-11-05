@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import {
-  X, AlertTriangle, Send, Copy, Check, Mail, ExternalLink, Download, Clock
+  X, AlertTriangle, Send, Copy, Check, Mail, ExternalLink, Download, Clock, MessageSquare
 } from 'lucide-react';
 import { useToast } from '@/components/Toast';
 
@@ -30,6 +30,7 @@ export default function TraineeAbsenceNoticeModal({
 
   const [customText, setCustomText] = useState('');
   const [sending, setSending] = useState(false);
+  const [postingToTeams, setPostingToTeams] = useState(false);
   const [copied, setCopied] = useState(false);
   const [emlData, setEmlData] = useState<string | null>(null);
 
@@ -90,6 +91,34 @@ Clarify the reason for your absence and ensure that the daily login process is f
       window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${to}&su=${subject}&body=${body}`, '_blank');
     } else {
       window.open(`https://outlook.live.com/mail/0/deeplink/compose?to=${to}&subject=${subject}&body=${body}`, '_blank');
+    }
+  };
+
+  const handlePostToTeams = async () => {
+    setPostingToTeams(true);
+    try {
+      const res = await fetch('/api/teams', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'send-absence-alert',
+          traineeName: trainee.traineeName,
+          batch: trainee.batchNumber || '3',
+          date,
+          customMessage: customText,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        toastSuccess('Posted to Teams!', `Dispatched absence warning card to Teams cohort channel for ${trainee.traineeName}.`);
+        onNoticeSent?.();
+      } else {
+        toastError('Teams Error', data.error || 'Failed to post alert to Teams.');
+      }
+    } catch {
+      toastError('Error', 'Failed to communicate with Teams service.');
+    } finally {
+      setPostingToTeams(false);
     }
   };
 
@@ -293,6 +322,25 @@ Clarify the reason for your absence and ensure that the daily login process is f
             >
               <ExternalLink size={13} color="#0284c7" />
               <span>Outlook Web</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handlePostToTeams}
+              disabled={postingToTeams}
+              className="btn btn-secondary btn-sm"
+              style={{
+                fontSize: 11,
+                gap: 5,
+                background: 'rgba(91, 95, 199, 0.2)',
+                borderColor: 'rgba(91, 95, 199, 0.45)',
+                color: '#c7d2fe',
+                fontWeight: 700,
+              }}
+              title="Post absence notice card directly into Microsoft Teams cohort channel"
+            >
+              <MessageSquare size={13} color="#7B83EB" />
+              <span>{postingToTeams ? 'Posting...' : '📢 Post to Teams'}</span>
             </button>
 
             <button
