@@ -190,43 +190,10 @@ export function getOrCreateAttendanceForDate(
         }
       }
 
-      // Default Batch 3 logic
-      if (idx === 0 || idx === 1) {
-        // On Time (08:52 AM, 08:55 AM)
-        return {
-          _id: genId(),
-          traineeId: t._id,
-          traineeName: t.name,
-          traineeEmail: t.email,
-          batchNumber: batchFilter,
-          date: dateStr,
-          loginTime: `08:5${2 + idx * 3} AM`,
-          logoutTime: '',
-          status: 'on-time',
-          goodMorningSent: true,
-          absenceNoticeSent: false,
-          minutesLate: 0,
-          remarks: 'Logged in before 9:00 AM.',
-        };
-      } else if (idx === 2 || idx === 3) {
-        // Grace period (09:05 AM, 09:08 AM)
-        return {
-          _id: genId(),
-          traineeId: t._id,
-          traineeName: t.name,
-          traineeEmail: t.email,
-          batchNumber: batchFilter,
-          date: dateStr,
-          loginTime: `09:0${5 + (idx - 2) * 3} AM`,
-          logoutTime: '',
-          status: 'grace-period',
-          goodMorningSent: true,
-          absenceNoticeSent: false,
-          minutesLate: 5 + (idx - 2) * 3,
-          remarks: 'Logged in within grace period.',
-        };
-      } else {
-        // Absent / Pending Login (e.g. Sana Sulthana, Tejaswar Rao)
+      // Batch 3 logic (From NYB Technical Group - III morning roll call)
+      // Tejaswar (09:00), Althaf (09:00), Chandra (09:00), Bala Krishna (09:00), Sana (09:02) all logged in!
+      // Girish C: Absent
+      if (t.name === 'Girish C') {
         return {
           _id: genId(),
           traineeId: t._id,
@@ -240,7 +207,40 @@ export function getOrCreateAttendanceForDate(
           goodMorningSent: false,
           absenceNoticeSent: false,
           minutesLate: 0,
-          remarks: 'Pending login verification.',
+          remarks: 'No Good Morning message received in NYB Technical Group - III.',
+        };
+      } else if (t.name === 'Sana Sulthana') {
+        return {
+          _id: genId(),
+          traineeId: t._id,
+          traineeName: t.name,
+          traineeEmail: t.email,
+          batchNumber: batchFilter,
+          date: dateStr,
+          loginTime: '09:02 AM',
+          logoutTime: '',
+          status: 'on-time',
+          goodMorningSent: true,
+          absenceNoticeSent: false,
+          minutesLate: 2,
+          remarks: 'Logged in at 09:02 AM in NYB Technical Group - III.',
+        };
+      } else {
+        // Althaf, Bala Krishna, Chandra Shekar, Tejaswar Rao all at 09:00 AM
+        return {
+          _id: genId(),
+          traineeId: t._id,
+          traineeName: t.name,
+          traineeEmail: t.email,
+          batchNumber: batchFilter,
+          date: dateStr,
+          loginTime: '09:00 AM',
+          logoutTime: '',
+          status: 'on-time',
+          goodMorningSent: true,
+          absenceNoticeSent: false,
+          minutesLate: 0,
+          remarks: 'Logged in at 09:00 AM in NYB Technical Group - III.',
         };
       }
     });

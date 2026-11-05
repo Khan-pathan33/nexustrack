@@ -50,11 +50,14 @@ export default function TeamsSetupModal({
   const [scannedData, setScannedData] = useState<any | null>(null);
   const [rawChatText, setRawChatText] = useState('');
   const [webhookUrl, setWebhookUrl] = useState('');
-  const [channelName, setChannelName] = useState('Technical Training - Cohort Standup');
+  const [channelName, setChannelName] = useState(
+    batchNumber === '4' ? 'NYB Technical Group - IV' : 'NYB Technical Group - III'
+  );
   const [copiedSample, setCopiedSample] = useState(false);
 
   useEffect(() => {
     setSelectedBatch(batchNumber);
+    setChannelName(batchNumber === '4' ? 'NYB Technical Group - IV' : 'NYB Technical Group - III');
   }, [batchNumber]);
 
   // Load Teams info on modal open
@@ -194,17 +197,35 @@ export default function TeamsSetupModal({
     }
   };
 
-  const sampleBatch3Chat = `[08:52 AM] Althaf Syed: Good morning mam! Working on React functional components and Sunray Hospital project.
-[08:56 AM] Bala Krishna Parimi: Good morning ma'am and team.
-[09:03 AM] Chandra Shekar K: Good morning team
-[09:08 AM] Girish C: Good morning everyone
-[09:12 AM] Tejaswar Rao: Good morning team! Starting Day 1 exercises.`;
+  const sampleBatch3Chat = `Tejeswar Rao 09:00
+Good Morning Team
 
-  const sampleBatch4Chat = `[08:51 AM] Adinarayana Meesala: Good morning team, logged in.
-[08:55 AM] Adithya Ram: Good morning everyone!
-[08:58 AM] Sruthi Badavath: Good morning team
-[09:04 AM] Jose Amala Kishor: Good morning ma'am
-[09:07 AM] Snehith Reddy Challa: Good morning all`;
+Althaf Syed 09:00
+Good Morning Team
+
+Chandra Shekar K 09:00
+Good Morning Team
+
+Bala Krishna Parimi 09:00
+Good morning team
+
+Sana Sulthana 09:02
+Good Morning Team`;
+
+  const sampleBatch4Chat = `Adinarayana Meesala 08:51
+Good morning team, logged in.
+
+Adithya Ram 08:55
+Good morning everyone!
+
+Sruthi Badavath 08:58
+Good morning team
+
+Jose Amala Kishor 09:04
+Good morning ma'am
+
+Snehith Reddy Challa 09:07
+Good morning all`;
 
   const handleLoadSampleChat = () => {
     const sample = selectedBatch === '4' ? sampleBatch4Chat : sampleBatch3Chat;
@@ -331,6 +352,7 @@ export default function TeamsSetupModal({
               type="button"
               onClick={() => {
                 setSelectedBatch('3');
+                setChannelName('NYB Technical Group - III');
                 handleScanLogins('3');
               }}
               style={{
@@ -350,6 +372,7 @@ export default function TeamsSetupModal({
               type="button"
               onClick={() => {
                 setSelectedBatch('4');
+                setChannelName('NYB Technical Group - IV');
                 handleScanLogins('4');
               }}
               style={{
@@ -495,15 +518,29 @@ export default function TeamsSetupModal({
                 <span style={{ fontSize: 13, fontWeight: 700, color: '#ffffff' }}>
                   Morning Punch Roll Call:
                 </span>
+                <span
+                  style={{
+                    fontSize: 12,
+                    padding: '3px 10px',
+                    borderRadius: 10,
+                    background: 'rgba(91, 95, 199, 0.25)',
+                    color: '#c7d2fe',
+                    border: '1px solid rgba(91, 95, 199, 0.45)',
+                    fontWeight: 600,
+                  }}
+                >
+                  💬 {selectedBatch === '4' ? 'NYB Technical Group - IV' : 'NYB Technical Group - III'}
+                </span>
                 {scannedData && (
                   <span
                     style={{
                       fontSize: 12,
                       padding: '3px 10px',
                       borderRadius: 10,
-                      background: 'rgba(91, 95, 199, 0.2)',
-                      color: '#a5b4fc',
-                      border: '1px solid rgba(91, 95, 199, 0.4)',
+                      background: 'rgba(16, 185, 129, 0.15)',
+                      color: '#6ee7b7',
+                      border: '1px solid rgba(16, 185, 129, 0.35)',
+                      fontWeight: 600,
                     }}
                   >
                     {scannedData.punchedCount}/{scannedData.totalTrainees} Logged In
