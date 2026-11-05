@@ -8,6 +8,10 @@ import {
   getAuthenticTeamsMorningMessages,
   parseTeamsChatLog,
   TeamsScannedLoginItem,
+  getAvailableTeamsScanDates,
+  saveTeamsScanForDate,
+  normalizeDateKey,
+  formatDisplayDate,
 } from '@/lib/teams-service';
 import {
   getOrCreateAttendanceForDate,
@@ -20,13 +24,13 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const action = searchParams.get('action');
 
-  // Handle Attendance Scanning via GET /api/teams?action=scan-attendance&batch=3
+  // Handle Attendance Scanning via GET /api/teams?action=scan-attendance&batch=3&date=2026-11-05
   if (action === 'scan-attendance') {
     const batch = searchParams.get('batch') || '3';
     const graceMinutes = parseInt(searchParams.get('grace') || '15', 10);
     const date = searchParams.get('date') || new Date().toISOString().split('T')[0];
 
-    const scannedPunches = getAuthenticTeamsMorningMessages(batch, graceMinutes);
+    const scannedPunches = getAuthenticTeamsMorningMessages(batch, date, graceMinutes);
 
     const onTimeCount = scannedPunches.filter((p) => p.status === 'on-time').length;
     const graceCount = scannedPunches.filter((p) => p.status === 'grace-period').length;
@@ -34,14 +38,17 @@ export async function GET(req: NextRequest) {
 
     const missingTraineesWithNotices = absentPunches.map((t) => ({
       ...t,
-      absenceNoticeSubject: `⚠️ Clarification Required: Daily Login & Absence Notice (${date}) — ${t.traineeName}`,
+      absenceNoticeSubject: `⚠️ Clarification Required: Daily Login & Absence Notice (${formatDisplayDate(normalizeDateKey(date))}) — ${t.traineeName}`,
       absenceNoticeBody: generateAbsenceNoticeText(t.traineeName),
     }));
+
+    const availableDates = getAvailableTeamsScanDates(batch);
 
     return NextResponse.json({
       success: true,
       batch,
-      date,
+      date: normalizeDateKey(date),
+      displayDate: formatDisplayDate(normalizeDateKey(date)),
       graceMinutes,
       totalTrainees: scannedPunches.length,
       punchedCount: onTimeCount + graceCount,
@@ -50,6 +57,18 @@ export async function GET(req: NextRequest) {
       absentCount: absentPunches.length,
       scannedPunches,
       missingTrainees: missingTraineesWithNotices,
+      availableDates,
+    });
+  }
+
+  // Handle Historical Dates Query via GET /api/teams?action=history&batch=3
+  if (action === 'history') {
+    const batch = searchParams.get('batch') || 'all';
+    const availableDates = getAvailableTeamsScanDates(batch);
+    return NextResponse.json({
+      success: true,
+      batch,
+      availableDates,
     });
   }
 
@@ -91,8 +110,11 @@ export async function POST(req: NextRequest) {
       if (rawChatText && rawChatText.trim().length > 10) {
         scannedPunches = parseTeamsChatLog(rawChatText, batch, graceMinutes);
       } else {
-        scannedPunches = getAuthenticTeamsMorningMessages(batch, graceMinutes);
+        scannedPunches = getAuthenticTeamsMorningMessages(batch, date, graceMinutes);
       }
+
+      // Persist this scan to history for this date
+      saveTeamsScanForDate(batch, date, scannedPunches);
 
       // If requested, apply directly to the in-memory attendance registry
       if (applyToRegister) {
@@ -131,7 +153,7 @@ export async function POST(req: NextRequest) {
 
       const missingTraineesWithNotices = absentPunches.map((t) => ({
         ...t,
-        absenceNoticeSubject: `⚠️ Clarification Required: Daily Login & Absence Notice (${date}) — ${t.traineeName}`,
+        absenceNoticeSubject: `⚠️ Clarification Required: Daily Login & Absence Notice (${formatDisplayDate(normalizeDateKey(date))}) — ${t.traineeName}`,
         absenceNoticeBody: generateAbsenceNoticeText(t.traineeName),
       }));
 
@@ -147,10 +169,13 @@ export async function POST(req: NextRequest) {
         }
       }
 
+      const availableDates = getAvailableTeamsScanDates(batch);
+
       return NextResponse.json({
         success: true,
         batch,
-        date,
+        date: normalizeDateKey(date),
+        displayDate: formatDisplayDate(normalizeDateKey(date)),
         graceMinutes,
         totalTrainees: scannedPunches.length,
         punchedCount: onTimeCount + graceCount,
@@ -161,6 +186,7 @@ export async function POST(req: NextRequest) {
         teamsNotifiedCount,
         scannedPunches,
         missingTrainees: missingTraineesWithNotices,
+        availableDates,
         message: `Scanned ${scannedPunches.length} trainees from Teams (${onTimeCount + graceCount} present, ${absentPunches.length} absent).`,
       });
     }

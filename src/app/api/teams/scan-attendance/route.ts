@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
     const graceMinutes = parseInt(searchParams.get('grace') || '15', 10);
     const date = searchParams.get('date') || new Date().toISOString().split('T')[0];
 
-    const scannedPunches = getAuthenticTeamsMorningMessages(batch, graceMinutes);
+    const scannedPunches = getAuthenticTeamsMorningMessages(batch, date, graceMinutes);
 
     const onTimeCount = scannedPunches.filter((p) => p.status === 'on-time').length;
     const graceCount = scannedPunches.filter((p) => p.status === 'grace-period').length;
@@ -66,7 +66,7 @@ export async function POST(req: NextRequest) {
     if (rawChatText && rawChatText.trim().length > 10) {
       scannedPunches = parseTeamsChatLog(rawChatText, batch, graceMinutes);
     } else {
-      scannedPunches = getAuthenticTeamsMorningMessages(batch, graceMinutes);
+      scannedPunches = getAuthenticTeamsMorningMessages(batch, date, graceMinutes);
     }
 
     // If requested, apply directly to the in-memory attendance registry

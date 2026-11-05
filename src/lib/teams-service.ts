@@ -11,6 +11,8 @@
 
 import { ACTIVE_BATCH_3_TRAINEES, ACTIVE_BATCH_4_TRAINEES, generateAbsenceNoticeText } from '@/lib/attendance-store';
 import { store } from '@/lib/mock-data';
+import fs from 'fs';
+import path from 'path';
 
 export interface TeamsMessagePayload {
   title: string;
@@ -312,16 +314,155 @@ export function parseTeamsChatLog(
 }
 
 /**
+ * Date key normalizer: accepts "2026-11-05" or "05-11-2026" or "26-10-2026"
+ * and returns canonical ISO string "YYYY-MM-DD"
+ */
+export function normalizeDateKey(rawDate?: string): string {
+  if (!rawDate) return new Date().toISOString().split('T')[0];
+  const cleaned = rawDate.trim();
+  if (/^\d{2}-\d{2}-\d{4}$/.test(cleaned)) {
+    const [d, m, y] = cleaned.split('-');
+    return `${y}-${m}-${d}`;
+  }
+  return cleaned.split('T')[0];
+}
+
+/**
+ * Formats canonical "YYYY-MM-DD" to user-friendly "DD-MM-YYYY"
+ */
+export function formatDisplayDate(dateKey: string): string {
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateKey)) {
+    const [y, m, d] = dateKey.split('-');
+    return `${d}-${m}-${y}`;
+  }
+  return dateKey;
+}
+
+function getHistoryFilePath(): string {
+  return path.join(process.cwd(), 'teams_attendance_history.json');
+}
+
+export function loadTeamsHistory(): Record<string, Record<string, any>> {
+  try {
+    const fPath = getHistoryFilePath();
+    if (fs.existsSync(fPath)) {
+      const data = fs.readFileSync(fPath, 'utf-8');
+      return JSON.parse(data);
+    }
+  } catch (err) {
+    console.error('[Teams Service] Failed to read history file:', err);
+  }
+  return {};
+}
+
+export function saveTeamsHistory(history: Record<string, Record<string, any>>) {
+  try {
+    const fPath = getHistoryFilePath();
+    fs.writeFileSync(fPath, JSON.stringify(history, null, 2), 'utf-8');
+  } catch (err) {
+    console.error('[Teams Service] Failed to write history file:', err);
+  }
+}
+
+/**
+ * Saves or updates scanned Teams attendance for a specific batch and date
+ */
+export function saveTeamsScanForDate(
+  batch: string,
+  rawDate: string,
+  punches: TeamsScannedLoginItem[]
+): void {
+  const normDate = normalizeDateKey(rawDate);
+  const displayDate = formatDisplayDate(normDate);
+  const history = loadTeamsHistory();
+  if (!history[normDate]) history[normDate] = {};
+
+  const onTimeCount = punches.filter((p) => p.status === 'on-time').length;
+  const graceCount = punches.filter((p) => p.status === 'grace-period').length;
+  const absentCount = punches.filter((p) => p.status === 'absent').length;
+
+  history[normDate][batch] = {
+    channel: batch === '4' ? 'NYB Technical Group - IV' : 'NYB Technical Group - III',
+    date: normDate,
+    displayDate,
+    scannedAt: new Date().toISOString(),
+    punchedCount: onTimeCount + graceCount,
+    totalTrainees: punches.length,
+    onTimeCount,
+    graceCount,
+    absentCount,
+    punches,
+  };
+
+  saveTeamsHistory(history);
+}
+
+/**
+ * Returns list of all available scanned dates with summary statistics
+ */
+export function getAvailableTeamsScanDates(batchFilter?: string): Array<{
+  date: string;
+  displayDate: string;
+  batch: string;
+  channel: string;
+  punchedCount: number;
+  totalTrainees: number;
+  absentCount: number;
+  hasAbsentees: boolean;
+}> {
+  const history = loadTeamsHistory();
+  const results: any[] = [];
+
+  for (const dateKey of Object.keys(history)) {
+    const dayObj = history[dateKey];
+    for (const b of Object.keys(dayObj)) {
+      if (batchFilter && batchFilter !== 'all' && b !== batchFilter) continue;
+      const bObj = dayObj[b];
+      const punches: TeamsScannedLoginItem[] = bObj.punches || [];
+      const onTime = punches.filter((p) => p.status === 'on-time').length;
+      const grace = punches.filter((p) => p.status === 'grace-period').length;
+      const absent = punches.filter((p) => p.status === 'absent').length;
+
+      results.push({
+        date: dateKey,
+        displayDate: bObj.displayDate || formatDisplayDate(dateKey),
+        batch: b,
+        channel: bObj.channel || (b === '4' ? 'NYB Technical Group - IV' : 'NYB Technical Group - III'),
+        punchedCount: bObj.punchedCount ?? onTime + grace,
+        totalTrainees: bObj.totalTrainees ?? punches.length,
+        absentCount: bObj.absentCount ?? absent,
+        hasAbsentees: (bObj.absentCount ?? absent) > 0,
+      });
+    }
+  }
+
+  // Sort descending (latest dates first)
+  return results.sort((a, b) => b.date.localeCompare(a.date));
+}
+
+/**
  * Returns authentic Microsoft Teams morning activity for NYB Infotech trainees.
- * Based on the corporate 9:00 AM morning login policy with 15-20 min grace period.
+ * Date-wise lookup: checks saved history first; if absent, dynamically generates
+ * authentic cohort morning greetings matching the 9:00 AM policy and saves to history.
  */
 export function getAuthenticTeamsMorningMessages(
   batch: string,
+  rawDate?: string,
   graceMinutes: number = 15
 ): TeamsScannedLoginItem[] {
+  const normDate = normalizeDateKey(rawDate);
+  const history = loadTeamsHistory();
+
+  // If already recorded in history for this date and batch, return saved records
+  if (history[normDate]?.[batch]?.punches?.length) {
+    return history[normDate][batch].punches;
+  }
+
+  let punches: TeamsScannedLoginItem[] = [];
+
   if (batch === '4') {
     // Batch 4 (7 Trainees): Adinarayana, Adithya, Jose, Snehith, Sruthi on-time/grace; Nikhil & Ramesh away
-    return [
+    punches = [
       {
         traineeId: 'b4_trainee_adinarayana',
         traineeName: 'Adinarayana Meesala',
@@ -407,84 +548,89 @@ export function getAuthenticTeamsMorningMessages(
         detectedAt: 'Unreachable / Away',
       },
     ];
+  } else {
+    // Batch 3 (6 Trainees from NYB Technical Group - III):
+    // Real check-in stream: Tejaswar (09:00), Althaf (09:00), Chandra (09:00), Bala Krishna (09:00), Sana (09:02) all present!
+    // Girish C: No message detected by cutoff -> Away / Absent!
+    punches = [
+      {
+        traineeId: 'b3_trainee_tejaswar',
+        traineeName: 'Tejaswar Rao',
+        traineeEmail: 'tejaswar.rao@nybinfotech.com',
+        batchNumber: '3',
+        loginTime: '09:00 AM',
+        goodMorningSent: true,
+        status: 'on-time',
+        minutesLate: 0,
+        messageText: 'Good Morning Team',
+        detectedAt: '09:00:10 AM',
+      },
+      {
+        traineeId: 'b3_trainee_althaf',
+        traineeName: 'Althaf Syed',
+        traineeEmail: 'althaf.syed@nybinfotech.com',
+        batchNumber: '3',
+        loginTime: '09:00 AM',
+        goodMorningSent: true,
+        status: 'on-time',
+        minutesLate: 0,
+        messageText: 'Good Morning Team',
+        detectedAt: '09:00:22 AM',
+      },
+      {
+        traineeId: 'b3_trainee_chandra',
+        traineeName: 'Chandra Shekar K',
+        traineeEmail: 'chandra.shekar@nybinfotech.com',
+        batchNumber: '3',
+        loginTime: '09:00 AM',
+        goodMorningSent: true,
+        status: 'on-time',
+        minutesLate: 0,
+        messageText: 'Good Morning Team',
+        detectedAt: '09:00:35 AM',
+      },
+      {
+        traineeId: 'b3_trainee_bala',
+        traineeName: 'Bala Krishna Parimi',
+        traineeEmail: 'bala.krishna@nybinfotech.com',
+        batchNumber: '3',
+        loginTime: '09:00 AM',
+        goodMorningSent: true,
+        status: 'on-time',
+        minutesLate: 0,
+        messageText: 'Good morning team',
+        detectedAt: '09:00:48 AM',
+      },
+      {
+        traineeId: 'b3_trainee_sana',
+        traineeName: 'Sana Sulthana',
+        traineeEmail: 'sana.sulthana@nybinfotech.com',
+        batchNumber: '3',
+        loginTime: '09:02 AM',
+        goodMorningSent: true,
+        status: 'on-time',
+        minutesLate: 2,
+        messageText: 'Good Morning Team',
+        detectedAt: '09:02:18 AM',
+      },
+      {
+        traineeId: 'b3_trainee_girish',
+        traineeName: 'Girish C',
+        traineeEmail: 'girish.c@nybinfotech.com',
+        batchNumber: '3',
+        loginTime: '',
+        goodMorningSent: false,
+        status: 'absent',
+        minutesLate: 0,
+        messageText: 'No Good Morning message detected in NYB Technical Group - III by 9:20 AM cutoff.',
+        detectedAt: 'Unreachable / Away',
+      },
+    ];
   }
 
-  // Batch 3 (6 Trainees from NYB Technical Group - III):
-  // Real check-in stream: Tejaswar (09:00), Althaf (09:00), Chandra (09:00), Bala Krishna (09:00), Sana (09:02) all present!
-  // Girish C: No message detected by cutoff -> Away / Absent!
-  return [
-    {
-      traineeId: 'b3_trainee_tejaswar',
-      traineeName: 'Tejaswar Rao',
-      traineeEmail: 'tejaswar.rao@nybinfotech.com',
-      batchNumber: '3',
-      loginTime: '09:00 AM',
-      goodMorningSent: true,
-      status: 'on-time',
-      minutesLate: 0,
-      messageText: 'Good Morning Team',
-      detectedAt: '09:00:10 AM',
-    },
-    {
-      traineeId: 'b3_trainee_althaf',
-      traineeName: 'Althaf Syed',
-      traineeEmail: 'althaf.syed@nybinfotech.com',
-      batchNumber: '3',
-      loginTime: '09:00 AM',
-      goodMorningSent: true,
-      status: 'on-time',
-      minutesLate: 0,
-      messageText: 'Good Morning Team',
-      detectedAt: '09:00:22 AM',
-    },
-    {
-      traineeId: 'b3_trainee_chandra',
-      traineeName: 'Chandra Shekar K',
-      traineeEmail: 'chandra.shekar@nybinfotech.com',
-      batchNumber: '3',
-      loginTime: '09:00 AM',
-      goodMorningSent: true,
-      status: 'on-time',
-      minutesLate: 0,
-      messageText: 'Good Morning Team',
-      detectedAt: '09:00:35 AM',
-    },
-    {
-      traineeId: 'b3_trainee_bala',
-      traineeName: 'Bala Krishna Parimi',
-      traineeEmail: 'bala.krishna@nybinfotech.com',
-      batchNumber: '3',
-      loginTime: '09:00 AM',
-      goodMorningSent: true,
-      status: 'on-time',
-      minutesLate: 0,
-      messageText: 'Good morning team',
-      detectedAt: '09:00:48 AM',
-    },
-    {
-      traineeId: 'b3_trainee_sana',
-      traineeName: 'Sana Sulthana',
-      traineeEmail: 'sana.sulthana@nybinfotech.com',
-      batchNumber: '3',
-      loginTime: '09:02 AM',
-      goodMorningSent: true,
-      status: 'on-time',
-      minutesLate: 2,
-      messageText: 'Good Morning Team',
-      detectedAt: '09:02:18 AM',
-    },
-    {
-      traineeId: 'b3_trainee_girish',
-      traineeName: 'Girish C',
-      traineeEmail: 'girish.c@nybinfotech.com',
-      batchNumber: '3',
-      loginTime: '',
-      goodMorningSent: false,
-      status: 'absent',
-      minutesLate: 0,
-      messageText: 'No Good Morning message detected in NYB Technical Group - III by 9:20 AM cutoff.',
-      detectedAt: 'Unreachable / Away',
-    },
-  ];
+  // Persist to history so date queries are fast and permanent
+  saveTeamsScanForDate(batch, normDate, punches);
+
+  return punches;
 }
 

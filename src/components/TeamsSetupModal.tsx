@@ -18,6 +18,9 @@ import {
   Radio,
   Sliders,
   Settings,
+  Calendar,
+  History,
+  ArrowRight,
 } from 'lucide-react';
 import { useToast } from '@/components/Toast';
 
@@ -38,9 +41,20 @@ export default function TeamsSetupModal({
 }: TeamsSetupModalProps) {
   const { success: toastSuccess, error: toastError, info: toastInfo } = useToast();
 
-  const [activeTab, setActiveTab] = useState<'scan' | 'paste' | 'webhook'>('scan');
+  const [activeTab, setActiveTab] = useState<'scan' | 'chat-stream' | 'paste' | 'history' | 'webhook'>('scan');
   const [selectedBatch, setSelectedBatch] = useState<string>(batchNumber || '3');
   const [graceMinutes, setGraceMinutes] = useState<15 | 20>(15);
+
+  const [selectedDate, setSelectedDate] = useState<string>(() => {
+    if (date) {
+      if (/^\d{2}-\d{2}-\d{4}$/.test(date)) {
+        const [d, m, y] = date.split('-');
+        return `${y}-${m}-${d}`;
+      }
+      return date;
+    }
+    return new Date().toISOString().split('T')[0];
+  });
 
   const [scanning, setScanning] = useState(false);
   const [applying, setApplying] = useState(false);
@@ -48,6 +62,7 @@ export default function TeamsSetupModal({
   const [notifyingAbsent, setNotifyingAbsent] = useState(false);
 
   const [scannedData, setScannedData] = useState<any | null>(null);
+  const [availableDates, setAvailableDates] = useState<any[]>([]);
   const [rawChatText, setRawChatText] = useState('');
   const [webhookUrl, setWebhookUrl] = useState('');
   const [channelName, setChannelName] = useState(
@@ -55,10 +70,20 @@ export default function TeamsSetupModal({
   );
   const [copiedSample, setCopiedSample] = useState(false);
 
+  // Sync external batch & date props
   useEffect(() => {
-    setSelectedBatch(batchNumber);
+    setSelectedBatch(batchNumber || '3');
     setChannelName(batchNumber === '4' ? 'NYB Technical Group - IV' : 'NYB Technical Group - III');
   }, [batchNumber]);
+
+  useEffect(() => {
+    if (date) {
+      const norm = /^\d{2}-\d{2}-\d{4}$/.test(date)
+        ? `${date.split('-')[2]}-${date.split('-')[1]}-${date.split('-')[0]}`
+        : date;
+      setSelectedDate(norm);
+    }
+  }, [date]);
 
   // Load Teams info on modal open
   useEffect(() => {
@@ -69,18 +94,22 @@ export default function TeamsSetupModal({
           if (data.channel) setChannelName(data.channel);
         })
         .catch(() => {});
-      // Auto run initial scan for active batch
-      handleScanLogins(selectedBatch);
+      // Auto run initial scan for active batch and date
+      handleScanLogins(selectedBatch, selectedDate);
     }
-  }, [isOpen, selectedBatch, graceMinutes]);
+  }, [isOpen, selectedBatch, selectedDate, graceMinutes]);
 
-  const handleScanLogins = async (batch: string) => {
+  const handleScanLogins = async (batch: string, targetDate?: string) => {
+    const d = targetDate || selectedDate;
     setScanning(true);
     try {
-      const res = await fetch(`/api/teams?action=scan-attendance&batch=${batch}&date=${date}&grace=${graceMinutes}`);
+      const res = await fetch(`/api/teams?action=scan-attendance&batch=${batch}&date=${d}&grace=${graceMinutes}`);
       if (res.ok) {
         const data = await res.json();
         setScannedData(data);
+        if (data.availableDates) {
+          setAvailableDates(data.availableDates);
+        }
       } else {
         toastError('Teams Scan Error', 'Could not scan Teams login messages.');
       }
@@ -100,7 +129,7 @@ export default function TeamsSetupModal({
         body: JSON.stringify({
           action: 'scan-attendance',
           batch: selectedBatch,
-          date,
+          date: selectedDate,
           graceMinutes,
           rawChatText: activeTab === 'paste' ? rawChatText : undefined,
           applyToRegister: true,
@@ -111,7 +140,7 @@ export default function TeamsSetupModal({
         const data = await res.json();
         toastSuccess(
           'Attendance Registry Updated!',
-          `Applied Teams logins for Batch ${selectedBatch}: ${data.punchedCount}/${data.totalTrainees} logged in.`
+          `Applied Teams logins for Batch ${selectedBatch} (${scannedData?.displayDate || selectedDate}): ${data.punchedCount}/${data.totalTrainees} logged in.`
         );
         onAttendanceUpdated?.();
       } else {
@@ -141,14 +170,14 @@ export default function TeamsSetupModal({
             action: 'send-absence-alert',
             traineeName: t.traineeName,
             batch: selectedBatch,
-            date,
+            date: selectedDate,
           }),
         });
         count++;
       }
       toastSuccess(
         'Absence Alerts Dispatched to Teams!',
-        `Sent ${count} morning absence warning notice(s) to Teams channel.`
+        `Sent ${count} morning absence warning notice(s) to ${channelName}.`
       );
     } catch {
       toastError('Error', 'Failed to post alerts to Teams.');
@@ -234,6 +263,13 @@ Good morning all`;
     setTimeout(() => setCopiedSample(false), 2000);
   };
 
+  const quickDates = [
+    { label: 'Today (05 Nov)', value: '2026-11-05' },
+    { label: '04 Nov', value: '2026-11-04' },
+    { label: '03 Nov', value: '2026-11-03' },
+    { label: '26 Oct', value: '2026-10-26' },
+  ];
+
   if (!isOpen) return null;
 
   return (
@@ -254,7 +290,7 @@ Good morning all`;
       <div
         style={{
           width: '100%',
-          maxWidth: 820,
+          maxWidth: 880,
           maxHeight: '92vh',
           backgroundColor: '#0d1322',
           border: '1px solid rgba(91, 95, 199, 0.35)', // Teams Purple accent
@@ -269,12 +305,12 @@ Good morning all`;
         {/* Header */}
         <div
           style={{
-            padding: '20px 24px',
+            padding: '18px 24px',
             borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            background: 'linear-gradient(135deg, rgba(91, 95, 199, 0.22), rgba(15, 23, 42, 0.6))',
+            background: 'linear-gradient(135deg, rgba(91, 95, 199, 0.25), rgba(15, 23, 42, 0.6))',
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
@@ -308,11 +344,11 @@ Good morning all`;
                     fontWeight: 600,
                   }}
                 >
-                  🟢 Connected (NYB Infotech)
+                  🟢 Connected ({channelName})
                 </span>
               </div>
               <p style={{ fontSize: 12, color: '#94a3b8', margin: '3px 0 0' }}>
-                9:00 AM Login & “Good Morning” Scanner • Absence Notices • Teams Channel Alerts
+                9:00 AM Login & “Good Morning” Scanner • Date-wise Attendance Archive • Absence Notices
               </p>
             </div>
           </div>
@@ -332,12 +368,12 @@ Good morning all`;
           </button>
         </div>
 
-        {/* Cohort & Policy Bar */}
+        {/* ── INTERACTIVE DATE & BATCH SELECTOR STRIP ── */}
         <div
           style={{
             padding: '12px 24px',
-            background: 'rgba(15, 23, 42, 0.6)',
-            borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
+            background: 'rgba(15, 23, 42, 0.8)',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
@@ -353,7 +389,7 @@ Good morning all`;
               onClick={() => {
                 setSelectedBatch('3');
                 setChannelName('NYB Technical Group - III');
-                handleScanLogins('3');
+                handleScanLogins('3', selectedDate);
               }}
               style={{
                 padding: '6px 12px',
@@ -373,7 +409,7 @@ Good morning all`;
               onClick={() => {
                 setSelectedBatch('4');
                 setChannelName('NYB Technical Group - IV');
-                handleScanLogins('4');
+                handleScanLogins('4', selectedDate);
               }}
               style={{
                 padding: '6px 12px',
@@ -390,41 +426,61 @@ Good morning all`;
             </button>
           </div>
 
-          {/* Grace Period Toggle */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: 12, color: '#94a3b8', fontWeight: 600 }}>9:00 AM Grace Window:</span>
-            <button
-              type="button"
-              onClick={() => setGraceMinutes(15)}
-              style={{
-                padding: '5px 10px',
-                borderRadius: 6,
-                fontSize: 11,
-                fontWeight: 700,
-                cursor: 'pointer',
-                border: graceMinutes === 15 ? '1px solid #f59e0b' : '1px solid rgba(255, 255, 255, 0.1)',
-                background: graceMinutes === 15 ? 'rgba(245, 158, 11, 0.2)' : 'transparent',
-                color: graceMinutes === 15 ? '#fbbf24' : '#64748b',
+          {/* Date Picker & Quick Date Pills */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            <span style={{ fontSize: 12, color: '#94a3b8', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}>
+              <Calendar size={13} color="#a5b4fc" />
+              <span>Select Date:</span>
+            </span>
+
+            {quickDates.map((q) => {
+              const isActive = selectedDate === q.value;
+              return (
+                <button
+                  key={q.value}
+                  type="button"
+                  onClick={() => {
+                    setSelectedDate(q.value);
+                    handleScanLogins(selectedBatch, q.value);
+                  }}
+                  style={{
+                    padding: '4px 10px',
+                    borderRadius: 6,
+                    fontSize: 11,
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    border: isActive ? '1px solid #5B5FC7' : '1px solid rgba(255, 255, 255, 0.1)',
+                    background: isActive ? 'linear-gradient(135deg, #5B5FC7, #444791)' : 'rgba(255, 255, 255, 0.04)',
+                    color: isActive ? '#ffffff' : '#94a3b8',
+                    boxShadow: isActive ? '0 2px 8px rgba(91, 95, 199, 0.4)' : 'none',
+                  }}
+                >
+                  {q.label}
+                </button>
+              );
+            })}
+
+            {/* Calendar Input for ANY date */}
+            <input
+              type="date"
+              value={selectedDate}
+              onChange={(e) => {
+                if (e.target.value) {
+                  setSelectedDate(e.target.value);
+                  handleScanLogins(selectedBatch, e.target.value);
+                }
               }}
-            >
-              15 Mins (Cutoff 9:15 AM)
-            </button>
-            <button
-              type="button"
-              onClick={() => setGraceMinutes(20)}
               style={{
-                padding: '5px 10px',
+                padding: '4px 8px',
                 borderRadius: 6,
+                background: 'rgba(0, 0, 0, 0.4)',
+                border: '1px solid rgba(255, 255, 255, 0.15)',
+                color: '#f8fafc',
                 fontSize: 11,
-                fontWeight: 700,
                 cursor: 'pointer',
-                border: graceMinutes === 20 ? '1px solid #f59e0b' : '1px solid rgba(255, 255, 255, 0.1)',
-                background: graceMinutes === 20 ? 'rgba(245, 158, 11, 0.2)' : 'transparent',
-                color: graceMinutes === 20 ? '#fbbf24' : '#64748b',
               }}
-            >
-              20 Mins (Cutoff 9:20 AM)
-            </button>
+              title="Pick any date from calendar"
+            />
           </div>
         </div>
 
@@ -434,7 +490,8 @@ Good morning all`;
             display: 'flex',
             borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
             padding: '0 24px',
-            gap: 20,
+            gap: 16,
+            overflowX: 'auto',
           }}
         >
           <button
@@ -452,10 +509,55 @@ Good morning all`;
               display: 'flex',
               alignItems: 'center',
               gap: 8,
+              whiteSpace: 'nowrap',
             }}
           >
             <Sparkles size={15} color={activeTab === 'scan' ? '#7B83EB' : '#94a3b8'} />
             <span>1-Click Teams Ingestion</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('chat-stream')}
+            style={{
+              padding: '12px 4px',
+              background: 'none',
+              border: 'none',
+              borderBottom: activeTab === 'chat-stream' ? '2px solid #5B5FC7' : '2px solid transparent',
+              color: activeTab === 'chat-stream' ? '#ffffff' : '#94a3b8',
+              fontSize: 13,
+              fontWeight: 700,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              whiteSpace: 'nowrap',
+            }}
+          >
+            <MessageSquare size={15} color={activeTab === 'chat-stream' ? '#7B83EB' : '#94a3b8'} />
+            <span>💬 Live Chat Stream</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('history')}
+            style={{
+              padding: '12px 4px',
+              background: 'none',
+              border: 'none',
+              borderBottom: activeTab === 'history' ? '2px solid #5B5FC7' : '2px solid transparent',
+              color: activeTab === 'history' ? '#ffffff' : '#94a3b8',
+              fontSize: 13,
+              fontWeight: 700,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              whiteSpace: 'nowrap',
+            }}
+          >
+            <History size={15} color={activeTab === 'history' ? '#7B83EB' : '#94a3b8'} />
+            <span>📅 Date History Archive ({availableDates.length})</span>
           </button>
 
           <button
@@ -473,9 +575,10 @@ Good morning all`;
               display: 'flex',
               alignItems: 'center',
               gap: 8,
+              whiteSpace: 'nowrap',
             }}
           >
-            <MessageSquare size={15} color={activeTab === 'paste' ? '#7B83EB' : '#94a3b8'} />
+            <Copy size={15} color={activeTab === 'paste' ? '#7B83EB' : '#94a3b8'} />
             <span>Paste Teams Chat History</span>
           </button>
 
@@ -494,14 +597,15 @@ Good morning all`;
               display: 'flex',
               alignItems: 'center',
               gap: 8,
+              whiteSpace: 'nowrap',
             }}
           >
             <Settings size={15} color={activeTab === 'webhook' ? '#7B83EB' : '#94a3b8'} />
-            <span>Teams Webhook & Channel Config</span>
+            <span>Channel & Webhook</span>
           </button>
         </div>
 
-        {/* Tab 1: Live Teams Ingestion */}
+        {/* ── TAB 1: 1-Click Teams Ingestion (Cards View) ── */}
         {activeTab === 'scan' && (
           <div style={{ padding: 24, overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: 18 }}>
             {/* Quick Actions Header */}
@@ -514,9 +618,9 @@ Good morning all`;
                 gap: 12,
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
                 <span style={{ fontSize: 13, fontWeight: 700, color: '#ffffff' }}>
-                  Morning Punch Roll Call:
+                  Roll Call Status:
                 </span>
                 <span
                   style={{
@@ -531,15 +635,28 @@ Good morning all`;
                 >
                   💬 {selectedBatch === '4' ? 'NYB Technical Group - IV' : 'NYB Technical Group - III'}
                 </span>
+                <span
+                  style={{
+                    fontSize: 12,
+                    padding: '3px 10px',
+                    borderRadius: 10,
+                    background: 'rgba(255, 255, 255, 0.08)',
+                    color: '#cbd5e1',
+                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                    fontWeight: 600,
+                  }}
+                >
+                  📅 {scannedData?.displayDate || selectedDate}
+                </span>
                 {scannedData && (
                   <span
                     style={{
                       fontSize: 12,
                       padding: '3px 10px',
                       borderRadius: 10,
-                      background: 'rgba(16, 185, 129, 0.15)',
-                      color: '#6ee7b7',
-                      border: '1px solid rgba(16, 185, 129, 0.35)',
+                      background: scannedData.absentCount > 0 ? 'rgba(245, 158, 11, 0.15)' : 'rgba(16, 185, 129, 0.15)',
+                      color: scannedData.absentCount > 0 ? '#fbbf24' : '#6ee7b7',
+                      border: scannedData.absentCount > 0 ? '1px solid rgba(245, 158, 11, 0.35)' : '1px solid rgba(16, 185, 129, 0.35)',
                       fontWeight: 600,
                     }}
                   >
@@ -551,7 +668,7 @@ Good morning all`;
               <div style={{ display: 'flex', gap: 10 }}>
                 <button
                   type="button"
-                  onClick={() => handleScanLogins(selectedBatch)}
+                  onClick={() => handleScanLogins(selectedBatch, selectedDate)}
                   disabled={scanning}
                   style={{
                     padding: '8px 14px',
@@ -591,7 +708,7 @@ Good morning all`;
                   }}
                 >
                   <CheckCircle2 size={14} />
-                  <span>{applying ? 'Updating...' : 'Sync to Attendance Register'}</span>
+                  <span>{applying ? 'Updating...' : `Sync to Register (${scannedData?.displayDate || selectedDate})`}</span>
                 </button>
               </div>
             </div>
@@ -694,12 +811,12 @@ Good morning all`;
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <AlertTriangle size={18} color="#ef4444" />
                     <strong style={{ fontSize: 14, color: '#f87171' }}>
-                      {scannedData.missingTrainees.length} Trainee(s) Absent Past {graceMinutes}m Grace Cutoff
+                      {scannedData.missingTrainees.length} Trainee(s) Absent on {scannedData.displayDate || selectedDate}
                     </strong>
                   </div>
                   <p style={{ margin: '4px 0 0', fontSize: 12, color: '#cbd5e1' }}>
                     Missing: {scannedData.missingTrainees.map((m: any) => m.traineeName).join(', ')}. Official
-                    absence notice drafts are generated and ready for Teams dispatch.
+                    absence notice drafts are generated and ready for dispatch.
                   </p>
                 </div>
 
@@ -732,7 +849,330 @@ Good morning all`;
           </div>
         )}
 
-        {/* Tab 2: Paste Teams Chat */}
+        {/* ── TAB 2: Live Teams Chat Stream View (Mirrors MS Teams Screenshot!) ── */}
+        {activeTab === 'chat-stream' && (
+          <div style={{ padding: 24, overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {/* Teams Header Bar */}
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '12px 18px',
+                borderRadius: 12,
+                background: 'rgba(20, 26, 45, 0.95)',
+                border: '1px solid rgba(91, 95, 199, 0.35)',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div
+                  style={{
+                    width: 38,
+                    height: 38,
+                    borderRadius: '50%',
+                    background: '#5B5FC7',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#fff',
+                    fontWeight: 800,
+                    fontSize: 14,
+                  }}
+                >
+                  NYB
+                </div>
+                <div>
+                  <h4 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: '#ffffff' }}>
+                    {selectedBatch === '4' ? 'NYB Technical Group - IV' : 'NYB Technical Group - III'}
+                  </h4>
+                  <span style={{ fontSize: 11, color: '#94a3b8' }}>
+                    📅 Chat Feed for: <strong style={{ color: '#38bdf8' }}>{scannedData?.displayDate || selectedDate}</strong> • {scannedData?.punchedCount || 0} Good Morning message(s)
+                  </span>
+                </div>
+              </div>
+
+              <span
+                style={{
+                  fontSize: 11,
+                  padding: '4px 10px',
+                  borderRadius: 8,
+                  background: 'rgba(56, 189, 248, 0.15)',
+                  color: '#38bdf8',
+                  border: '1px solid rgba(56, 189, 248, 0.3)',
+                  fontWeight: 600,
+                }}
+              >
+                Teams Chat View
+              </span>
+            </div>
+
+            {/* Conversation Stream Container (Exact Teams Desktop Dark Theme Layout) */}
+            <div
+              style={{
+                background: '#141824',
+                borderRadius: 14,
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                padding: '20px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 16,
+              }}
+            >
+              <div style={{ textAlign: 'center', borderBottom: '1px solid rgba(255, 255, 255, 0.06)', paddingBottom: 10 }}>
+                <span style={{ fontSize: 11, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1 }}>
+                  — {scannedData?.displayDate || selectedDate} Morning Session —
+                </span>
+              </div>
+
+              {scannedData?.scannedPunches?.map((item: any, idx: number) => {
+                if (item.status === 'absent') return null;
+
+                const initials = item.traineeName
+                  .split(' ')
+                  .map((n: string) => n[0])
+                  .slice(0, 2)
+                  .join('');
+
+                const colors = ['#2563eb', '#7c3aed', '#059669', '#d97706', '#db2777', '#0891b2'];
+                const avatarBg = colors[idx % colors.length];
+
+                return (
+                  <div
+                    key={idx}
+                    style={{
+                      display: 'flex',
+                      gap: 14,
+                      alignItems: 'flex-start',
+                      padding: '8px 12px',
+                      borderRadius: 10,
+                      background: 'rgba(255, 255, 255, 0.02)',
+                      border: '1px solid rgba(255, 255, 255, 0.04)',
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: 36,
+                        height: 36,
+                        borderRadius: '50%',
+                        background: avatarBg,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: '#ffffff',
+                        fontWeight: 700,
+                        fontSize: 12,
+                        flexShrink: 0,
+                        boxShadow: '0 2px 6px rgba(0,0,0,0.3)',
+                      }}
+                    >
+                      {initials}
+                    </div>
+
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: '#f8fafc' }}>
+                          {item.traineeName}
+                        </span>
+                        <span style={{ fontSize: 11, color: '#94a3b8' }}>
+                          {item.loginTime ? item.loginTime.replace(' AM', '') : '09:00'}
+                        </span>
+                        <span
+                          style={{
+                            fontSize: 10,
+                            padding: '1px 6px',
+                            borderRadius: 6,
+                            background: item.status === 'on-time' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(245, 158, 11, 0.2)',
+                            color: item.status === 'on-time' ? '#34d399' : '#fbbf24',
+                            fontWeight: 600,
+                          }}
+                        >
+                          {item.status === 'on-time' ? 'On-Time' : 'Grace'}
+                        </span>
+                      </div>
+
+                      <div
+                        style={{
+                          marginTop: 4,
+                          fontSize: 13,
+                          color: '#e2e8f0',
+                          lineHeight: 1.5,
+                        }}
+                      >
+                        {item.messageText}
+                      </div>
+
+                      {/* Teams Reaction Badges */}
+                      <div style={{ marginTop: 6, display: 'flex', gap: 6 }}>
+                        <span
+                          style={{
+                            fontSize: 11,
+                            padding: '2px 6px',
+                            borderRadius: 12,
+                            background: 'rgba(255, 255, 255, 0.06)',
+                            color: '#94a3b8',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 3,
+                          }}
+                        >
+                          👍 1
+                        </span>
+                        <span
+                          style={{
+                            fontSize: 11,
+                            padding: '2px 6px',
+                            borderRadius: 12,
+                            background: 'rgba(255, 255, 255, 0.06)',
+                            color: '#94a3b8',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 3,
+                          }}
+                        >
+                          ❤️
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+
+              {/* Absentees Alert Notice Inside Chat Feed */}
+              {scannedData?.missingTrainees?.map((m: any, idx: number) => (
+                <div
+                  key={`absent-${idx}`}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 12,
+                    padding: '10px 14px',
+                    borderRadius: 10,
+                    background: 'rgba(239, 68, 68, 0.1)',
+                    border: '1px dashed rgba(239, 68, 68, 0.35)',
+                  }}
+                >
+                  <AlertTriangle size={18} color="#ef4444" />
+                  <div style={{ flex: 1, fontSize: 12, color: '#fca5a5' }}>
+                    <strong>{m.traineeName}</strong> — No Good Morning message detected by cutoff.
+                  </div>
+                  <span style={{ fontSize: 11, color: '#ef4444', fontWeight: 700 }}>
+                    Absent / Pending
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── TAB 3: Date History Archive (Full Historical Timeline) ── */}
+        {activeTab === 'history' && (
+          <div style={{ padding: 24, overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div>
+              <h4 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: '#ffffff' }}>
+                Teams Daily Attendance & Good Morning Archive
+              </h4>
+              <p style={{ margin: '4px 0 0', fontSize: 12, color: '#94a3b8' }}>
+                Historical log of 9:00 AM Teams logins for {selectedBatch === '4' ? 'Batch 4 (NYB Technical Group - IV)' : 'Batch 3 (NYB Technical Group - III)'}.
+              </p>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {availableDates.map((item: any) => {
+                const isSelected = selectedDate === item.date;
+                return (
+                  <div
+                    key={`${item.date}-${item.batch}`}
+                    style={{
+                      padding: '14px 18px',
+                      borderRadius: 12,
+                      background: isSelected ? 'rgba(91, 95, 199, 0.2)' : 'rgba(255, 255, 255, 0.03)',
+                      border: isSelected ? '1.5px solid #5B5FC7' : '1px solid rgba(255, 255, 255, 0.08)',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      flexWrap: 'wrap',
+                      gap: 12,
+                      transition: 'all 0.15s ease',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                      <div
+                        style={{
+                          width: 40,
+                          height: 40,
+                          borderRadius: 10,
+                          background: isSelected ? '#5B5FC7' : 'rgba(255, 255, 255, 0.06)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: '#ffffff',
+                          fontWeight: 800,
+                          fontSize: 13,
+                        }}
+                      >
+                        <Calendar size={18} />
+                      </div>
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <strong style={{ fontSize: 14, color: '#f8fafc' }}>
+                            {item.displayDate}
+                          </strong>
+                          {isSelected && (
+                            <span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 4, background: '#5B5FC7', color: '#fff', fontWeight: 700 }}>
+                              Active Selection
+                            </span>
+                          )}
+                        </div>
+                        <span style={{ fontSize: 12, color: '#94a3b8' }}>
+                          Channel: {item.channel}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: item.hasAbsentees ? '#fbbf24' : '#34d399' }}>
+                          {item.punchedCount}/{item.totalTrainees} Present
+                        </div>
+                        <span style={{ fontSize: 11, color: item.hasAbsentees ? '#f87171' : '#64748b' }}>
+                          {item.hasAbsentees ? `${item.absentCount} Absent` : '100% On-Time 🎉'}
+                        </span>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedDate(item.date);
+                          handleScanLogins(selectedBatch, item.date);
+                          setActiveTab('scan');
+                          toastInfo('Date Loaded', `Viewing Teams attendance for ${item.displayDate}`);
+                        }}
+                        style={{
+                          padding: '6px 14px',
+                          borderRadius: 8,
+                          background: isSelected ? 'linear-gradient(135deg, #5B5FC7, #444791)' : 'rgba(255, 255, 255, 0.08)',
+                          border: isSelected ? 'none' : '1px solid rgba(255, 255, 255, 0.15)',
+                          color: '#ffffff',
+                          fontSize: 12,
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 6,
+                        }}
+                      >
+                        <span>Inspect Date</span>
+                        <ArrowRight size={13} />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* ── TAB 4: Paste Teams Chat ── */}
         {activeTab === 'paste' && (
           <div style={{ padding: 24, overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -741,7 +1181,7 @@ Good morning all`;
                   Paste Microsoft Teams Chat Log
                 </h4>
                 <p style={{ margin: '4px 0 0', fontSize: 12, color: '#94a3b8' }}>
-                  Copy-paste morning chat messages directly from your Teams cohort channel.
+                  Paste morning chat messages for <strong style={{ color: '#38bdf8' }}>{scannedData?.displayDate || selectedDate}</strong> directly from Teams.
                 </p>
               </div>
 
@@ -770,7 +1210,7 @@ Good morning all`;
             <textarea
               value={rawChatText}
               onChange={(e) => setRawChatText(e.target.value)}
-              placeholder={`Paste messages from Microsoft Teams here, for example:\n[08:52 AM] Althaf Syed: Good morning mam\n[08:56 AM] Bala Krishna Parimi: Good morning team\n[09:03 AM] Chandra Shekar K: Good morning team`}
+              placeholder={`Paste messages from Microsoft Teams here, for example:\nTejeswar Rao 09:00\nGood Morning Team\n\nAlthaf Syed 09:00\nGood Morning Team`}
               rows={9}
               style={{
                 width: '100%',
@@ -808,13 +1248,13 @@ Good morning all`;
                 }}
               >
                 <CheckCircle2 size={15} />
-                <span>{applying ? 'Parsing & Updating...' : 'Parse & Sync to Attendance Register'}</span>
+                <span>{applying ? 'Parsing & Updating...' : `Parse & Sync to ${scannedData?.displayDate || selectedDate}`}</span>
               </button>
             </div>
           </div>
         )}
 
-        {/* Tab 3: Webhook & Channel Config */}
+        {/* ── TAB 5: Webhook & Channel Config ── */}
         {activeTab === 'webhook' && (
           <div style={{ padding: 24, overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: 18 }}>
             <div>
@@ -834,7 +1274,7 @@ Good morning all`;
                 type="text"
                 value={channelName}
                 onChange={(e) => setChannelName(e.target.value)}
-                placeholder="Technical Training - Cohort Standup"
+                placeholder="NYB Technical Group - III"
                 style={{
                   padding: '10px 14px',
                   borderRadius: 8,
@@ -885,7 +1325,7 @@ Good morning all`;
             >
               <strong style={{ color: '#a5b4fc' }}>💡 How to generate a Teams Webhook in 30 seconds:</strong>
               <ol style={{ margin: '8px 0 0', paddingLeft: 18 }}>
-                <li>Open Microsoft Teams &rarr; Go to your Cohort Channel (e.g. <em>Batch 3 Frontend</em>).</li>
+                <li>Open Microsoft Teams &rarr; Go to your Cohort Channel (e.g. <em>NYB Technical Group - III</em>).</li>
                 <li>Click <strong>••• (More options)</strong> &rarr; Select <strong>Connectors</strong> (or <strong>Workflows</strong>).</li>
                 <li>Choose <strong>Incoming Webhook</strong> &rarr; Click Add &rarr; Copy the generated URL into the box above.</li>
               </ol>
@@ -948,7 +1388,7 @@ Good morning all`;
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: '#64748b' }}>
             <Shield size={13} color="#10b981" />
-            <span>M365 Tenant: Navayuva Bharathi Infotech 703</span>
+            <span>M365 Tenant: Navayuva Bharathi Infotech 703 • Active Date: {scannedData?.displayDate || selectedDate}</span>
           </div>
 
           <button
