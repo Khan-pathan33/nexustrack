@@ -469,3 +469,4 @@ const history = {
 
 fs.writeFileSync(historyFile, JSON.stringify(history, null, 2), 'utf-8');
 console.log('Successfully generated teams_attendance_history.json with', Object.keys(history).length, 'dates!');
+
