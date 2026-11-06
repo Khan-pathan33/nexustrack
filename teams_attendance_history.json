@@ -681,15 +681,15 @@
       "date": "2026-11-06",
       "displayDate": "06-11-2026",
       "scannedAt": "2026-11-06T04:31:25.765Z",
-      "punchedCount": 5,
+      "punchedCount": 6,
       "totalTrainees": 6,
-      "onTimeCount": 5,
+      "onTimeCount": 6,
       "graceCount": 0,
-      "absentCount": 1,
+      "absentCount": 0,
       "punches": [
         {
           "traineeId": "b3_trainee_tejaswar",
-          "traineeName": "Tejaswar Rao",
+          "traineeName": "Tejeswar Rao",
           "traineeEmail": "tejaswar.rao@nybinfotech.com",
           "batchNumber": "3",
           "loginTime": "09:00 AM",
@@ -712,6 +712,18 @@
           "detectedAt": "09:00:22 AM"
         },
         {
+          "traineeId": "b3_trainee_girish",
+          "traineeName": "Girish C",
+          "traineeEmail": "girish.c@nybinfotech.com",
+          "batchNumber": "3",
+          "loginTime": "09:00 AM",
+          "goodMorningSent": true,
+          "status": "on-time",
+          "minutesLate": 0,
+          "messageText": "Good Morning Team",
+          "detectedAt": "09:00:15 AM"
+        },
+        {
           "traineeId": "b3_trainee_chandra",
           "traineeName": "Chandra Shekar K",
           "traineeEmail": "chandra.shekar@nybinfotech.com",
@@ -732,7 +744,7 @@
           "goodMorningSent": true,
           "status": "on-time",
           "minutesLate": 0,
-          "messageText": "Good morning team",
+          "messageText": "Good Morning Team",
           "detectedAt": "09:00:48 AM"
         },
         {
@@ -746,18 +758,6 @@
           "minutesLate": 2,
           "messageText": "Good Morning Team",
           "detectedAt": "09:02:18 AM"
-        },
-        {
-          "traineeId": "b3_trainee_girish",
-          "traineeName": "Girish C",
-          "traineeEmail": "girish.c@nybinfotech.com",
-          "batchNumber": "3",
-          "loginTime": "",
-          "goodMorningSent": false,
-          "status": "absent",
-          "minutesLate": 0,
-          "messageText": "No Good Morning message detected in NYB Technical Group - III by 9:20 AM cutoff.",
-          "detectedAt": "Unreachable / Away"
         }
       ]
     },

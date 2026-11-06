@@ -116,3 +116,4 @@ if (code.includes(sampleButtonTarget)) {
 
 fs.writeFileSync(targetFile, code, 'utf8');
 console.log('TeamsSetupModal.tsx updated successfully!');
+

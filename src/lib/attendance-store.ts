@@ -1,3 +1,5 @@
+import fs from 'fs';
+import path from 'path';
 import { store, genId } from '@/lib/mock-data';
 
 export interface AttendanceRecord {
@@ -98,162 +100,148 @@ export const ACTIVE_BATCH_4_TRAINEES = [
 /**
  * Retrieve or initialize attendance records for a given date
  */
+
+function loadHistoryFile(): Record<string, Record<string, any>> {
+  try {
+    const fPath = path.join(process.cwd(), 'teams_attendance_history.json');
+    if (fs.existsSync(fPath)) {
+      return JSON.parse(fs.readFileSync(fPath, 'utf8'));
+    }
+  } catch (err) {
+    console.error('Error reading teams_attendance_history.json:', err);
+  }
+  return {};
+}
+
+function normalizeDateStr(d?: string): string {
+  if (!d) return new Date().toISOString().split('T')[0];
+  const cleaned = d.trim();
+  if (/^\d{2}-\d{2}-\d{4}$/.test(cleaned)) {
+    const [day, m, y] = cleaned.split('-');
+    return `${y}-${m}-${day}`;
+  }
+  return cleaned.split('T')[0];
+}
+
+function syncAttendanceRecordToHistory(dateStr: string, batchFilter: string, record: AttendanceRecord) {
+  try {
+    const fPath = path.join(process.cwd(), 'teams_attendance_history.json');
+    if (!fs.existsSync(fPath)) return;
+    const normDate = normalizeDateStr(dateStr);
+    const history = JSON.parse(fs.readFileSync(fPath, 'utf8'));
+    if (!history[normDate]) history[normDate] = {};
+    if (!history[normDate][batchFilter]) {
+      history[normDate][batchFilter] = {
+        channel: batchFilter === '4' ? 'NYB Technical Group - IV' : 'NYB Technical Group - III',
+        date: normDate,
+        displayDate: normDate.split('-').reverse().join('-'),
+        scannedAt: new Date().toISOString(),
+        punches: [],
+      };
+    }
+
+    const bObj = history[normDate][batchFilter];
+    if (!bObj.punches) bObj.punches = [];
+    const existingPunch = bObj.punches.find((p: any) =>
+      p.traineeName.toLowerCase() === record.traineeName.toLowerCase()
+    );
+
+    if (existingPunch) {
+      existingPunch.loginTime = record.loginTime;
+      existingPunch.status = record.status;
+      existingPunch.goodMorningSent = record.goodMorningSent;
+      existingPunch.minutesLate = record.minutesLate;
+    } else {
+      bObj.punches.push({
+        traineeId: record.traineeId,
+        traineeName: record.traineeName,
+        traineeEmail: record.traineeEmail,
+        batchNumber: batchFilter,
+        loginTime: record.loginTime,
+        goodMorningSent: record.goodMorningSent,
+        status: record.status,
+        minutesLate: record.minutesLate,
+        messageText: record.remarks,
+      });
+    }
+
+    bObj.punchedCount = bObj.punches.filter((p: any) => p.status === 'on-time' || p.status === 'grace-period').length;
+    bObj.totalTrainees = bObj.punches.length;
+    bObj.onTimeCount = bObj.punches.filter((p: any) => p.status === 'on-time').length;
+    bObj.graceCount = bObj.punches.filter((p: any) => p.status === 'grace-period').length;
+    bObj.absentCount = bObj.punches.filter((p: any) => p.status === 'absent').length;
+
+    fs.writeFileSync(fPath, JSON.stringify(history, null, 2), 'utf8');
+  } catch (err) {
+    console.warn('Could not sync record to history file:', err);
+  }
+}
+
+/**
+ * Retrieve or initialize attendance records dynamically date-wise from persistent history.
+ * Zero hardcoded names or absent assumptions!
+ */
 export function getOrCreateAttendanceForDate(
   dateStr: string,
   batchFilter: string = '3'
 ): AttendanceRecord[] {
-  const cacheKey = `${dateStr}_b${batchFilter}`;
+  const normDate = normalizeDateStr(dateStr);
+  const cacheKey = `${normDate}_b${batchFilter}`;
 
-  if (attendanceCache[cacheKey]) {
-    // Invalidate stale cache if trainee count doesn't match the respective active batch cohort
-    const expectedCount =
-      batchFilter === '3'
-        ? ACTIVE_BATCH_3_TRAINEES.length
-        : batchFilter === '4'
-        ? ACTIVE_BATCH_4_TRAINEES.length
-        : 0;
+  // Load from date-wise persistent history first (source of truth)
+  const history = loadHistoryFile();
+  const dayBatchHistory = history[normDate]?.[batchFilter];
 
-    const isStale =
-      attendanceCache[cacheKey].some(r => r.traineeName === 'Sana Sulthana' && r.status === 'on-leave') ||
-      (expectedCount > 0 && attendanceCache[cacheKey].length !== expectedCount);
+  if (dayBatchHistory?.punches?.length) {
+    const recordsFromHistory: AttendanceRecord[] = dayBatchHistory.punches.map((p: any) => ({
+      _id: p.traineeId || genId(),
+      traineeId: p.traineeId || `t_${p.traineeName.replace(/\s+/g, '_').toLowerCase()}`,
+      traineeName: p.traineeName,
+      traineeEmail: p.traineeEmail || `${p.traineeName.toLowerCase().replace(/\s+/g, '.')}@nybinfotech.com`,
+      batchNumber: batchFilter,
+      date: normDate,
+      loginTime: p.loginTime || '',
+      logoutTime: '',
+      status: p.status || (p.loginTime ? 'on-time' : 'absent'),
+      goodMorningSent: Boolean(p.goodMorningSent),
+      absenceNoticeSent: false,
+      minutesLate: p.minutesLate || 0,
+      remarks: p.messageText || (p.status === 'absent' ? 'No Good Morning message received.' : 'Logged in via Teams.'),
+    }));
 
-    if (isStale) {
-      delete attendanceCache[cacheKey];
-    }
+    attendanceCache[cacheKey] = recordsFromHistory;
+    return recordsFromHistory;
   }
 
-  if (!attendanceCache[cacheKey]) {
-    // Collect all trainees for this cohort from in-memory store
-    const cohortTrainees = store.trainees.filter(t => {
-      if (batchFilter === 'all') return true;
-      if (batchFilter === '3') {
-        return ACTIVE_BATCH_3_TRAINEES.includes(t.name);
-      }
-      if (batchFilter === '4') {
-        return ACTIVE_BATCH_4_TRAINEES.includes(t.name) || t.department?.includes('Batch 4');
-      }
-      return t.department?.includes(`Batch ${batchFilter}`);
-    });
-
-    // Provide authentic initial data with realistic morning punch timestamps
-    const initialRecords: AttendanceRecord[] = cohortTrainees.map((t, idx) => {
-      if (batchFilter === '4') {
-        // Specific realistic attendance scenario for Batch 4 (Nikhil and Ramesh away)
-        if (t.name === 'Nikhil Kumar Kurapati' || t.name === 'Ramesh Kumar A') {
-          return {
-            _id: genId(),
-            traineeId: t._id,
-            traineeName: t.name,
-            traineeEmail: t.email,
-            batchNumber: '4',
-            date: dateStr,
-            loginTime: '',
-            logoutTime: '',
-            status: 'absent',
-            goodMorningSent: false,
-            absenceNoticeSent: false,
-            minutesLate: 0,
-            remarks: 'Pending login verification.',
-          };
-        } else if (idx === 2 || idx === 3) {
-          return {
-            _id: genId(),
-            traineeId: t._id,
-            traineeName: t.name,
-            traineeEmail: t.email,
-            batchNumber: '4',
-            date: dateStr,
-            loginTime: `09:0${5 + (idx - 2) * 3} AM`,
-            logoutTime: '',
-            status: 'grace-period',
-            goodMorningSent: true,
-            absenceNoticeSent: false,
-            minutesLate: 5 + (idx - 2) * 3,
-            remarks: 'Logged in within grace period.',
-          };
-        } else {
-          return {
-            _id: genId(),
-            traineeId: t._id,
-            traineeName: t.name,
-            traineeEmail: t.email,
-            batchNumber: '4',
-            date: dateStr,
-            loginTime: `08:5${2 + (idx % 2) * 4} AM`,
-            logoutTime: '',
-            status: 'on-time',
-            goodMorningSent: true,
-            absenceNoticeSent: false,
-            minutesLate: 0,
-            remarks: 'Logged in before 9:00 AM.',
-          };
-        }
-      }
-
-      // Batch 3 logic (From NYB Technical Group - III morning roll call)
-      // Tejaswar (09:00), Althaf (09:00), Chandra (09:00), Bala Krishna (09:00), Sana (09:02) all logged in!
-      // Girish C: Absent
-      if (t.name === 'Girish C') {
-        return {
-          _id: genId(),
-          traineeId: t._id,
-          traineeName: t.name,
-          traineeEmail: t.email,
-          batchNumber: batchFilter,
-          date: dateStr,
-          loginTime: '',
-          logoutTime: '',
-          status: 'absent',
-          goodMorningSent: false,
-          absenceNoticeSent: false,
-          minutesLate: 0,
-          remarks: 'No Good Morning message received in NYB Technical Group - III.',
-        };
-      } else if (t.name === 'Sana Sulthana') {
-        return {
-          _id: genId(),
-          traineeId: t._id,
-          traineeName: t.name,
-          traineeEmail: t.email,
-          batchNumber: batchFilter,
-          date: dateStr,
-          loginTime: '09:02 AM',
-          logoutTime: '',
-          status: 'on-time',
-          goodMorningSent: true,
-          absenceNoticeSent: false,
-          minutesLate: 2,
-          remarks: 'Logged in at 09:02 AM in NYB Technical Group - III.',
-        };
-      } else {
-        // Althaf, Bala Krishna, Chandra Shekar, Tejaswar Rao all at 09:00 AM
-        return {
-          _id: genId(),
-          traineeId: t._id,
-          traineeName: t.name,
-          traineeEmail: t.email,
-          batchNumber: batchFilter,
-          date: dateStr,
-          loginTime: '09:00 AM',
-          logoutTime: '',
-          status: 'on-time',
-          goodMorningSent: true,
-          absenceNoticeSent: false,
-          minutesLate: 0,
-          remarks: 'Logged in at 09:00 AM in NYB Technical Group - III.',
-        };
-      }
-    });
-
-    attendanceCache[cacheKey] = initialRecords;
+  if (attendanceCache[cacheKey]?.length) {
+    return attendanceCache[cacheKey];
   }
 
-  return attendanceCache[cacheKey];
+  // Clean initial defaults for trainees in this cohort
+  const activeNames = batchFilter === '4' ? ACTIVE_BATCH_4_TRAINEES : ACTIVE_BATCH_3_TRAINEES;
+  const initialRecords: AttendanceRecord[] = activeNames.map((name) => {
+    const storeTrainee = store.trainees.find((t) => t.name.toLowerCase() === name.toLowerCase());
+    return {
+      _id: storeTrainee?._id || genId(),
+      traineeId: storeTrainee?._id || `t_${name.replace(/\s+/g, '_').toLowerCase()}`,
+      traineeName: name,
+      traineeEmail: storeTrainee?.email || `${name.toLowerCase().replace(/\s+/g, '.')}@nybinfotech.com`,
+      batchNumber: batchFilter,
+      date: normDate,
+      loginTime: '',
+      logoutTime: '',
+      status: 'absent',
+      goodMorningSent: false,
+      absenceNoticeSent: false,
+      minutesLate: 0,
+      remarks: 'Pending morning Teams roll call.',
+    };
+  });
+
+  attendanceCache[cacheKey] = initialRecords;
+  return initialRecords;
 }
 
-/**
- * Record Trainee Login
- */
 export function recordTraineeLogin(
   traineeId: string,
   dateStr: string,
@@ -288,6 +276,7 @@ export function recordTraineeLogin(
       ? `Logged in ${diffMinutes}m after 9:00 AM (within ${graceMinutes}m grace).`
       : `Late login recorded (${diffMinutes}m after 9:00 AM).`;
 
+  syncAttendanceRecordToHistory(dateStr, batchFilter, rec);
   return rec;
 }
 
@@ -309,6 +298,7 @@ export function recordTraineeLogout(
   rec.status = 'logged-out';
   rec.remarks = `Day shift completed. Logged out at ${logoutTime}.`;
 
+  syncAttendanceRecordToHistory(dateStr, batchFilter, rec);
   return rec;
 }
 
@@ -325,6 +315,7 @@ export function toggleTraineeGoodMorning(
   if (!rec) return null;
 
   rec.goodMorningSent = !rec.goodMorningSent;
+  syncAttendanceRecordToHistory(dateStr, batchFilter, rec);
   return rec;
 }
 
