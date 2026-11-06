@@ -372,6 +372,7 @@ export function saveTeamsScanForDate(
   rawDate: string,
   punches: TeamsScannedLoginItem[]
 ): void {
+  if (batch === 'all') return; // Do not write synthetic 'all' key to persistent file
   const normDate = normalizeDateKey(rawDate);
   const displayDate = formatDisplayDate(normDate);
   const history = loadTeamsHistory();
@@ -452,6 +453,13 @@ export function getAuthenticTeamsMorningMessages(
 ): TeamsScannedLoginItem[] {
   const normDate = normalizeDateKey(rawDate);
   const history = loadTeamsHistory();
+
+  // If scanning all batches, aggregate Batch 3 & Batch 4 together
+  if (batch === 'all') {
+    const b3 = getAuthenticTeamsMorningMessages('3', rawDate, graceMinutes);
+    const b4 = getAuthenticTeamsMorningMessages('4', rawDate, graceMinutes);
+    return [...b3, ...b4];
+  }
 
   // If already recorded in history for this date and batch, return saved records
   if (history[normDate]?.[batch]?.punches?.length) {

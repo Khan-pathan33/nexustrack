@@ -417,7 +417,7 @@ Good morning all`;
                 color: selectedBatch === '3' ? '#38bdf8' : '#94a3b8',
               }}
             >
-              Batch 3 (6 Trainees)
+              Batch 3 (NYB Group III)
             </button>
             <button
               type="button"
@@ -437,7 +437,27 @@ Good morning all`;
                 color: selectedBatch === '4' ? '#c084fc' : '#94a3b8',
               }}
             >
-              Batch 4 (7 Trainees)
+              Batch 4 (NYB Group IV)
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedBatch('all');
+                setChannelName('NYB Technical Group - III & IV (Both)');
+                handleScanLogins('all', selectedDate);
+              }}
+              style={{
+                padding: '6px 12px',
+                borderRadius: 8,
+                fontSize: 12,
+                fontWeight: 700,
+                cursor: 'pointer',
+                border: selectedBatch === 'all' ? '1px solid #10b981' : '1px solid rgba(255, 255, 255, 0.1)',
+                background: selectedBatch === 'all' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255, 255, 255, 0.03)',
+                color: selectedBatch === 'all' ? '#34d399' : '#94a3b8',
+              }}
+            >
+              🌐 Both Groups (13 Trainees)
             </button>
           </div>
 
@@ -648,7 +668,7 @@ Good morning all`;
                     fontWeight: 600,
                   }}
                 >
-                  💬 {selectedBatch === '4' ? 'NYB Technical Group - IV' : 'NYB Technical Group - III'}
+                  💬 {selectedBatch === 'all' ? 'NYB Technical Groups III & IV' : selectedBatch === '4' ? 'NYB Technical Group - IV' : 'NYB Technical Group - III'}
                 </span>
                 <span
                   style={{
@@ -757,9 +777,23 @@ Good morning all`;
                     }}
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: 13, fontWeight: 700, color: '#ffffff' }}>
-                        {punch.traineeName}
-                      </span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: '#ffffff' }}>
+                          {punch.traineeName}
+                        </span>
+                        <span
+                          style={{
+                            fontSize: 10,
+                            padding: '1px 6px',
+                            borderRadius: 4,
+                            background: punch.batchNumber === '4' ? 'rgba(192, 132, 252, 0.2)' : 'rgba(56, 189, 248, 0.2)',
+                            color: punch.batchNumber === '4' ? '#c084fc' : '#38bdf8',
+                            fontWeight: 700,
+                          }}
+                        >
+                          {punch.batchNumber === '4' ? 'Group IV' : 'Group III'}
+                        </span>
+                      </div>
                       <span
                         style={{
                           fontSize: 11,

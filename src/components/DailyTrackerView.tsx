@@ -4648,9 +4648,43 @@ export default function DailyTrackerView({ trackers = [], onRefresh }: { tracker
                 >
                   <MessageSquare size={13} />
                 </div>
-                <strong style={{ fontSize: 13, color: '#38bdf8' }}>
-                  {selectedBatch === '4' ? 'NYB Technical Group - IV' : 'NYB Technical Group - III'}
-                </strong>
+                <div style={{ display: 'inline-flex', alignItems: 'center', background: 'rgba(0,0,0,0.3)', borderRadius: 6, padding: '2px 4px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                  <button
+                    type="button"
+                    onClick={() => handleSwitchBatch('3')}
+                    style={{
+                      background: selectedBatch === '3' ? 'rgba(56, 189, 248, 0.25)' : 'transparent',
+                      border: 'none',
+                      color: selectedBatch === '3' ? '#38bdf8' : '#94a3b8',
+                      fontSize: 11,
+                      fontWeight: 700,
+                      padding: '2px 6px',
+                      borderRadius: 4,
+                      cursor: 'pointer',
+                    }}
+                    title="Switch to NYB Technical Group - III (Batch 3)"
+                  >
+                    NYB Group - III
+                  </button>
+                  <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: 10, margin: '0 2px' }}>|</span>
+                  <button
+                    type="button"
+                    onClick={() => handleSwitchBatch('4')}
+                    style={{
+                      background: selectedBatch === '4' ? 'rgba(192, 132, 252, 0.25)' : 'transparent',
+                      border: 'none',
+                      color: selectedBatch === '4' ? '#c084fc' : '#94a3b8',
+                      fontSize: 11,
+                      fontWeight: 700,
+                      padding: '2px 6px',
+                      borderRadius: 4,
+                      cursor: 'pointer',
+                    }}
+                    title="Switch to NYB Technical Group - IV (Batch 4)"
+                  >
+                    NYB Group - IV
+                  </button>
+                </div>
                 <span style={{ fontSize: 11, color: '#94a3b8' }}>
                   ({teamsDaySummary.displayDate || selectedSheetDate}):
                 </span>
