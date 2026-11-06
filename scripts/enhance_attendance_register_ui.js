@@ -200,3 +200,4 @@ code = code.replace(kpiTarget, `${dateStrip}${kpiTarget}`);
 
 fs.writeFileSync(targetFile, code, 'utf8');
 console.log('TraineeAttendanceRegister.tsx now features full date-wise attendance controls!');
+

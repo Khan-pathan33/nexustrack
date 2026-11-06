@@ -197,3 +197,4 @@ code = code.replace(
 
 fs.writeFileSync(targetFile, code, 'utf8');
 console.log('src/lib/attendance-store.ts is now 100% dynamic and date-wise!');
+

@@ -94,3 +94,4 @@ Object.keys(history).forEach((k) => delete history[k]['all']);
 
 fs.writeFileSync(histPath, JSON.stringify(history, null, 2), 'utf8');
 console.log('teams_attendance_history.json successfully updated for 2026-11-06 (Batch 3: 6/6 Present)');
+
