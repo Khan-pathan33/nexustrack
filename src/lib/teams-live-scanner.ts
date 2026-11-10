@@ -79,6 +79,55 @@ export function normalizeDate(dateStr?: string): string {
 }
 
 /**
+ * Builds name variants for resilient pattern matching in Teams chat binary streams
+ */
+function getNameVariants(trainee: string): string[] {
+  const list = [trainee];
+  const parts = trainee.split(' ').filter(Boolean);
+  if (parts.length > 0) {
+    list.push(parts[0]); // first name
+  }
+  if (trainee.includes('Tejeswar') || trainee.includes('Tejaswar')) {
+    list.push('Tejaswar Rao', 'Tejeswar Rao', 'Tejaswar', 'Tejeswar');
+  }
+  if (trainee.includes('Althaf') || trainee.includes('Altaf')) {
+    list.push('Althaf Syed', 'Altaf Syed', 'Althaf', 'Altaf');
+  }
+  if (trainee.includes('Bala Krishna')) {
+    list.push('Bala Krishna', 'Bala Krishna Parimi');
+  }
+  if (trainee.includes('Chandra Shekar')) {
+    list.push('Chandra Shekar', 'Chandra Shekar K');
+  }
+  if (trainee.includes('Sana Sulthana')) {
+    list.push('Sana Sulthana', 'Sana');
+  }
+  if (trainee.includes('Jose Amala')) {
+    list.push('Jose Amala Kishor', 'Jose Amala', 'Jose');
+  }
+  if (trainee.includes('Ramesh Kumar')) {
+    list.push('Ramesh Kumar A', 'Ramesh Kumar', 'Ramesh');
+  }
+  if (trainee.includes('Sruthi Badavath')) {
+    list.push('Sruthi Badavath', 'Sruthi');
+  }
+  if (trainee.includes('Adithya Ram')) {
+    list.push('Adithya Ram', 'Adithya');
+  }
+  if (trainee.includes('Nikhil Kumar')) {
+    list.push('Nikhil Kumar Kurapati', 'Nikhil Kumar', 'Nikhil');
+  }
+  if (trainee.includes('Adinarayana')) {
+    list.push('Adinarayana Meesala', 'Adinarayana');
+  }
+  if (trainee.includes('Snehith Reddy')) {
+    list.push('Snehith Reddy Challa', 'Snehith Reddy', 'Snehith');
+  }
+
+  return Array.from(new Set(list));
+}
+
+/**
  * Scans the local Microsoft Teams LevelDB database for morning activity of a specific cohort and date.
  */
 export function scanLocalTeamsDatabase(
@@ -101,74 +150,79 @@ export function scanLocalTeamsDatabase(
   const startOfDay = new Date(Date.UTC(y, m - 1, d, 0, 0, 0) - (5.5 * 3600 * 1000)).getTime();
   const endOfDay = startOfDay + 24 * 3600 * 1000 - 1;
 
-  let files: string[] = [];
+  let files: Array<{ name: string; full: string; mtime: number }> = [];
   try {
-    files = fs.readdirSync(dir)
+    files = fs
+      .readdirSync(dir)
       .filter((f) => f.endsWith('.ldb') || f.endsWith('.log'))
-      .map((f) => path.join(dir, f));
+      .map((f) => {
+        const full = path.join(dir, f);
+        return { name: f, full, mtime: fs.statSync(full).mtimeMs };
+      })
+      .sort((a, b) => b.mtime - a.mtime);
   } catch (err: any) {
     console.error('[Teams Live Scanner] Failed to list LevelDB files:', err.message);
     return buildAbsentRoster(traineeList, batchNumber, 'Error accessing Teams LevelDB files');
   }
 
-  const allDetected: Array<{
-    trainee: string;
-    epoch: number;
-    message: string;
-    file: string;
-  }> = [];
+  const punches = new Map<
+    string,
+    { trainee: string; epoch: number; message: string; file: string }
+  >();
 
-  for (const filePath of files) {
+  for (const file of files) {
     try {
-      const buf = fs.readFileSync(filePath);
+      const buf = fs.readFileSync(file.full);
       const text = buf.toString('latin1');
 
       for (const trainee of traineeList) {
-        const variants = [trainee];
-        if (trainee === 'Tejeswar Rao') variants.push('Tejaswar Rao');
-        if (trainee === 'Althaf Syed') variants.push('Altaf Syed');
+        const variants = getNameVariants(trainee);
 
         for (const nameVar of variants) {
           let idx = 0;
           while ((idx = text.indexOf(nameVar, idx)) !== -1) {
-            const start = Math.max(0, idx - 700);
-            const end = Math.min(text.length, idx + 700);
+            const start = Math.max(0, idx - 800);
+            const end = Math.min(text.length, idx + 800);
             const windowBuf = buf.slice(start, end);
             const windowText = text.slice(start, end);
 
-            // Method 1: Look for 13-digit epoch string (e.g. 1793935805451)
-            const regex = /17939\d{8}/g;
+            // 1. Look for 13-digit epoch timestamp in window (universal for 2025-2028)
+            const regex = /\b1[78]\d{11}\b/g;
             let m: RegExpExecArray | null;
             while ((m = regex.exec(windowText)) !== null) {
               const ep = parseInt(m[0], 10);
               if (ep >= startOfDay && ep <= endOfDay) {
-                let msg = '';
-                const pMatch = windowText.match(/<p>(.*?)<\/p>/i);
-                if (pMatch) msg = pMatch[1];
-                else {
-                  const gm = windowText.match(/Good\s*Morning[^\x00-\x1f"<]{0,40}/i);
-                  if (gm) msg = gm[0];
-                }
+                if (!punches.has(trainee) || ep < punches.get(trainee)!.epoch) {
+                  let msg = '';
+                  const pMatch = windowText.match(/<p>(.*?)<\/p>/i);
+                  if (pMatch) msg = pMatch[1].trim();
+                  else {
+                    const gmMatch = windowText.match(/Good\s*Morning[^\x00-\x1f"<]{0,40}/i);
+                    if (gmMatch) msg = gmMatch[0].trim();
+                  }
 
-                allDetected.push({
-                  trainee,
-                  epoch: ep,
-                  message: msg ? msg.trim() : 'Good Morning Team',
-                  file: path.basename(filePath),
-                });
+                  punches.set(trainee, {
+                    trainee,
+                    epoch: ep,
+                    message: msg || 'Good Morning Team',
+                    file: file.name,
+                  });
+                }
               }
             }
 
-            // Method 2: Look for 8-byte LE double epoch ms
+            // 2. Look for 8-byte LE double timestamp
             for (let k = 0; k < windowBuf.length - 8; k += 4) {
               const val = windowBuf.readDoubleLE(k);
               if (val >= startOfDay && val <= endOfDay) {
-                allDetected.push({
-                  trainee,
-                  epoch: val,
-                  message: 'Good Morning Team',
-                  file: path.basename(filePath),
-                });
+                if (!punches.has(trainee) || val < punches.get(trainee)!.epoch) {
+                  punches.set(trainee, {
+                    trainee,
+                    epoch: val,
+                    message: 'Good Morning Team',
+                    file: file.name,
+                  });
+                }
                 break;
               }
             }
@@ -180,21 +234,13 @@ export function scanLocalTeamsDatabase(
     } catch {}
   }
 
-  // Find the earliest message of the day for each trainee (their morning login check-in)
-  const earliestByTrainee = new Map<string, { epoch: number; message: string; file: string }>();
-  for (const item of allDetected) {
-    if (!earliestByTrainee.has(item.trainee) || item.epoch < (earliestByTrainee.get(item.trainee)?.epoch || Infinity)) {
-      earliestByTrainee.set(item.trainee, item);
-    }
-  }
-
   // Build the final real punch roster
   return traineeList.map((name) => {
     const email = `${name.toLowerCase().replace(/\s+/g, '.')}@nybinfotech.com`;
     const traineeId = `b${batchNumber}_trainee_${name.split(' ')[0].toLowerCase()}`;
 
-    if (earliestByTrainee.has(name)) {
-      const match = earliestByTrainee.get(name)!;
+    if (punches.has(name)) {
+      const match = punches.get(name)!;
       const dObj = new Date(match.epoch);
 
       // Convert epoch to IST (+05:30)
@@ -213,7 +259,7 @@ export function scanLocalTeamsDatabase(
       else if (minutesLate <= graceMinutes) status = 'grace-period';
       else status = 'late';
 
-      const hasGmGreeting = Boolean(match.message && /good\s*morning/i.test(match.message));
+      const cleanMsg = match.message.replace(/<[^>]+>/g, '').replace(/[^\x20-\x7E]/g, ' ').trim();
 
       return {
         traineeId,
@@ -221,10 +267,10 @@ export function scanLocalTeamsDatabase(
         traineeEmail: email,
         batchNumber,
         loginTime: formattedTime,
-        goodMorningSent: hasGmGreeting || true, // Active in Teams group at 9:00 AM
+        goodMorningSent: true,
         status,
         minutesLate,
-        messageText: match.message || 'Good Morning Team',
+        messageText: cleanMsg || 'Good Morning Team',
         detectedAt: dObj.toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata' }),
         epoch: match.epoch,
         sourceFile: match.file,
