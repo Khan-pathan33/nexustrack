@@ -99,16 +99,22 @@ export default function TeamsSetupModal({
     }
   }, [isOpen, selectedBatch, selectedDate, graceMinutes]);
 
-  const handleScanLogins = async (batch: string, targetDate?: string) => {
+  const handleScanLogins = async (batch: string, targetDate?: string, forceLive = false) => {
     const d = targetDate || selectedDate;
     setScanning(true);
     try {
-      const res = await fetch(`/api/teams?action=scan-attendance&batch=${batch}&date=${d}&grace=${graceMinutes}`);
+      const res = await fetch(`/api/teams?action=scan-attendance&batch=${batch}&date=${d}&grace=${graceMinutes}${forceLive ? '&force=true' : ''}`);
       if (res.ok) {
         const data = await res.json();
         setScannedData(data);
         if (data.availableDates) {
           setAvailableDates(data.availableDates);
+        }
+        if (forceLive) {
+          toastSuccess(
+            'Live Teams Scan Complete',
+            `Scanned active Microsoft Teams client: ${data.punchedCount}/${data.totalTrainees} logged in.`
+          );
         }
       } else {
         toastError('Teams Scan Error', 'Could not scan Teams login messages.');
@@ -132,6 +138,7 @@ export default function TeamsSetupModal({
           date: selectedDate,
           graceMinutes,
           rawChatText: activeTab === 'paste' ? rawChatText : undefined,
+          forceLiveScan: activeTab === 'scan',
           applyToRegister: true,
         }),
       });
@@ -703,24 +710,25 @@ Good morning all`;
               <div style={{ display: 'flex', gap: 10 }}>
                 <button
                   type="button"
-                  onClick={() => handleScanLogins(selectedBatch, selectedDate)}
+                  onClick={() => handleScanLogins(selectedBatch, selectedDate, true)}
                   disabled={scanning}
                   style={{
                     padding: '8px 14px',
                     borderRadius: 8,
-                    background: 'rgba(255, 255, 255, 0.06)',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                    color: '#ffffff',
+                    background: 'rgba(56, 189, 248, 0.12)',
+                    border: '1px solid rgba(56, 189, 248, 0.35)',
+                    color: '#38bdf8',
                     fontSize: 12,
-                    fontWeight: 600,
+                    fontWeight: 700,
                     cursor: scanning ? 'not-allowed' : 'pointer',
                     display: 'flex',
                     alignItems: 'center',
                     gap: 6,
                   }}
+                  title="Scans real morning messages directly from the running Microsoft Teams database"
                 >
                   <RefreshCw size={14} className={scanning ? 'spin' : ''} />
-                  <span>Rescan Teams</span>
+                  <span>{scanning ? 'Scanning LevelDB...' : '⚡ Live Scan Teams App'}</span>
                 </button>
 
                 <button

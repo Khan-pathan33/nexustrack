@@ -10,6 +10,7 @@
  */
 
 import { ACTIVE_BATCH_3_TRAINEES, ACTIVE_BATCH_4_TRAINEES, generateAbsenceNoticeText } from '@/lib/attendance-store';
+import { scanLocalTeamsDatabase } from '@/lib/teams-live-scanner';
 import { store } from '@/lib/mock-data';
 import fs from 'fs';
 import path from 'path';
@@ -466,177 +467,23 @@ export function getAuthenticTeamsMorningMessages(
     return history[normDate][batch].punches;
   }
 
-  let punches: TeamsScannedLoginItem[] = [];
+  // Perform real-time scan of the local Microsoft Teams LevelDB database
+  const scannedPunches = scanLocalTeamsDatabase(normDate, batch, graceMinutes);
 
-  if (batch === '4') {
-    // Batch 4 (7 Trainees): Adinarayana, Adithya, Jose, Snehith, Sruthi on-time/grace; Nikhil & Ramesh away
-    punches = [
-      {
-        traineeId: 'b4_trainee_adinarayana',
-        traineeName: 'Adinarayana Meesala',
-        traineeEmail: 'adinarayana.meesala@nybinfotech.com',
-        batchNumber: '4',
-        loginTime: '08:51 AM',
-        goodMorningSent: true,
-        status: 'on-time',
-        minutesLate: 0,
-        messageText: 'Good morning ma’am, logged in for today’s React tasks.',
-        detectedAt: '08:51:22 AM',
-      },
-      {
-        traineeId: 'b4_trainee_adithya',
-        traineeName: 'Adithya Ram',
-        traineeEmail: 'adithya.ram@nybinfotech.com',
-        batchNumber: '4',
-        loginTime: '08:55 AM',
-        goodMorningSent: true,
-        status: 'on-time',
-        minutesLate: 0,
-        messageText: 'Good morning everyone! Ready for today’s session.',
-        detectedAt: '08:55:04 AM',
-      },
-      {
-        traineeId: 'b4_trainee_jose',
-        traineeName: 'Jose Amala Kishor',
-        traineeEmail: 'jose.amala@nybinfotech.com',
-        batchNumber: '4',
-        loginTime: '09:04 AM',
-        goodMorningSent: true,
-        status: 'grace-period',
-        minutesLate: 4,
-        messageText: 'Good morning team and ma’am.',
-        detectedAt: '09:04:15 AM',
-      },
-      {
-        traineeId: 'b4_trainee_snehith',
-        traineeName: 'Snehith Reddy Challa',
-        traineeEmail: 'snehith.reddy@nybinfotech.com',
-        batchNumber: '4',
-        loginTime: '09:07 AM',
-        goodMorningSent: true,
-        status: 'grace-period',
-        minutesLate: 7,
-        messageText: 'Good morning all.',
-        detectedAt: '09:07:38 AM',
-      },
-      {
-        traineeId: 'b4_trainee_sruthi',
-        traineeName: 'Sruthi Badavath',
-        traineeEmail: 'sruthi.badavath@nybinfotech.com',
-        batchNumber: '4',
-        loginTime: '08:58 AM',
-        goodMorningSent: true,
-        status: 'on-time',
-        minutesLate: 0,
-        messageText: 'Good morning team.',
-        detectedAt: '08:58:49 AM',
-      },
-      {
-        traineeId: 'b4_trainee_nikhil',
-        traineeName: 'Nikhil Kumar Kurapati',
-        traineeEmail: 'nikhil.kumar@nybinfotech.com',
-        batchNumber: '4',
-        loginTime: '',
-        goodMorningSent: false,
-        status: 'absent',
-        minutesLate: 0,
-        messageText: 'No login / Good Morning message detected in Teams channel by 9:20 AM cutoff.',
-        detectedAt: 'Unreachable / Away',
-      },
-      {
-        traineeId: 'b4_trainee_ramesh',
-        traineeName: 'Ramesh Kumar A',
-        traineeEmail: 'ramesh.kumar@nybinfotech.com',
-        batchNumber: '4',
-        loginTime: '',
-        goodMorningSent: false,
-        status: 'absent',
-        minutesLate: 0,
-        messageText: 'No login / Good Morning message detected in Teams channel by 9:20 AM cutoff.',
-        detectedAt: 'Unreachable / Away',
-      },
-    ];
-  } else {
-    // Batch 3 (6 Trainees from NYB Technical Group - III):
-    // Real check-in stream: Tejaswar (09:00), Althaf (09:00), Chandra (09:00), Bala Krishna (09:00), Sana (09:02) all present!
-    // Girish C: No message detected by cutoff -> Away / Absent!
-    punches = [
-      {
-        traineeId: 'b3_trainee_tejaswar',
-        traineeName: 'Tejaswar Rao',
-        traineeEmail: 'tejaswar.rao@nybinfotech.com',
-        batchNumber: '3',
-        loginTime: '09:00 AM',
-        goodMorningSent: true,
-        status: 'on-time',
-        minutesLate: 0,
-        messageText: 'Good Morning Team',
-        detectedAt: '09:00:10 AM',
-      },
-      {
-        traineeId: 'b3_trainee_althaf',
-        traineeName: 'Althaf Syed',
-        traineeEmail: 'althaf.syed@nybinfotech.com',
-        batchNumber: '3',
-        loginTime: '09:00 AM',
-        goodMorningSent: true,
-        status: 'on-time',
-        minutesLate: 0,
-        messageText: 'Good Morning Team',
-        detectedAt: '09:00:22 AM',
-      },
-      {
-        traineeId: 'b3_trainee_chandra',
-        traineeName: 'Chandra Shekar K',
-        traineeEmail: 'chandra.shekar@nybinfotech.com',
-        batchNumber: '3',
-        loginTime: '09:00 AM',
-        goodMorningSent: true,
-        status: 'on-time',
-        minutesLate: 0,
-        messageText: 'Good Morning Team',
-        detectedAt: '09:00:35 AM',
-      },
-      {
-        traineeId: 'b3_trainee_bala',
-        traineeName: 'Bala Krishna Parimi',
-        traineeEmail: 'bala.krishna@nybinfotech.com',
-        batchNumber: '3',
-        loginTime: '09:00 AM',
-        goodMorningSent: true,
-        status: 'on-time',
-        minutesLate: 0,
-        messageText: 'Good morning team',
-        detectedAt: '09:00:48 AM',
-      },
-      {
-        traineeId: 'b3_trainee_sana',
-        traineeName: 'Sana Sulthana',
-        traineeEmail: 'sana.sulthana@nybinfotech.com',
-        batchNumber: '3',
-        loginTime: '09:02 AM',
-        goodMorningSent: true,
-        status: 'on-time',
-        minutesLate: 2,
-        messageText: 'Good Morning Team',
-        detectedAt: '09:02:18 AM',
-      },
-      {
-        traineeId: 'b3_trainee_girish',
-        traineeName: 'Girish C',
-        traineeEmail: 'girish.c@nybinfotech.com',
-        batchNumber: '3',
-        loginTime: '',
-        goodMorningSent: false,
-        status: 'absent',
-        minutesLate: 0,
-        messageText: 'No Good Morning message detected in NYB Technical Group - III by 9:20 AM cutoff.',
-        detectedAt: 'Unreachable / Away',
-      },
-    ];
-  }
+  const punches: TeamsScannedLoginItem[] = scannedPunches.map((p) => ({
+    traineeId: p.traineeId,
+    traineeName: p.traineeName,
+    traineeEmail: p.traineeEmail,
+    batchNumber: p.batchNumber,
+    loginTime: p.loginTime,
+    goodMorningSent: p.goodMorningSent,
+    status: p.status,
+    minutesLate: p.minutesLate,
+    messageText: p.messageText,
+    detectedAt: p.detectedAt,
+  }));
 
-  // Persist to history so date queries are fast and permanent
+  // Persist genuine scanned results to history so date queries are instant and permanent
   saveTeamsScanForDate(batch, normDate, punches);
 
   return punches;
