@@ -30,25 +30,29 @@ export async function GET(req: NextRequest) {
     const batch = searchParams.get('batch') || '3';
     const graceMinutes = parseInt(searchParams.get('grace') || '15', 10);
     const date = searchParams.get('date') || new Date().toISOString().split('T')[0];
-    const forceRescan = searchParams.get('force') === 'true' || searchParams.get('live') === 'true';
 
+    // Always live scan Microsoft Teams LevelDB database for authentic timestamps
     let scannedPunches: TeamsScannedLoginItem[] = [];
-    if (forceRescan) {
+    try {
       const livePunches = scanLocalTeamsDatabase(date, batch, graceMinutes);
-      scannedPunches = livePunches.map((p) => ({
-        traineeId: p.traineeId,
-        traineeName: p.traineeName,
-        traineeEmail: p.traineeEmail,
-        batchNumber: p.batchNumber,
-        loginTime: p.loginTime,
-        goodMorningSent: p.goodMorningSent,
-        status: p.status,
-        minutesLate: p.minutesLate,
-        messageText: p.messageText,
-        detectedAt: p.detectedAt,
-      }));
-      saveTeamsScanForDate(batch, date, scannedPunches);
-    } else {
+      if (livePunches && livePunches.length > 0) {
+        scannedPunches = livePunches.map((p) => ({
+          traineeId: p.traineeId,
+          traineeName: p.traineeName,
+          traineeEmail: p.traineeEmail,
+          batchNumber: p.batchNumber,
+          loginTime: p.loginTime,
+          goodMorningSent: p.goodMorningSent,
+          status: p.status,
+          minutesLate: p.minutesLate,
+          messageText: p.messageText,
+          detectedAt: p.detectedAt,
+        }));
+        saveTeamsScanForDate(batch, date, scannedPunches);
+      } else {
+        scannedPunches = getAuthenticTeamsMorningMessages(batch, date, graceMinutes);
+      }
+    } catch {
       scannedPunches = getAuthenticTeamsMorningMessages(batch, date, graceMinutes);
     }
 

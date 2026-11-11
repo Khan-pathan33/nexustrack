@@ -201,29 +201,20 @@ export function scanLocalTeamsDatabase(
                     if (gmMatch) msg = gmMatch[0].trim();
                   }
 
+                  // Sanitize message from internal LevelDB binary hashes
+                  const cleanText = (msg || 'Good Morning Team')
+                    .replace(/<[^>]+>/g, '')
+                    .replace(/[^\x20-\x7E]/g, ' ')
+                    .replace(/\s+/g, ' ')
+                    .trim();
+
                   punches.set(trainee, {
                     trainee,
                     epoch: ep,
-                    message: msg || 'Good Morning Team',
+                    message: cleanText || 'Good Morning Team',
                     file: file.name,
                   });
                 }
-              }
-            }
-
-            // 2. Look for 8-byte LE double timestamp
-            for (let k = 0; k < windowBuf.length - 8; k += 4) {
-              const val = windowBuf.readDoubleLE(k);
-              if (val >= startOfDay && val <= endOfDay) {
-                if (!punches.has(trainee) || val < punches.get(trainee)!.epoch) {
-                  punches.set(trainee, {
-                    trainee,
-                    epoch: val,
-                    message: 'Good Morning Team',
-                    file: file.name,
-                  });
-                }
-                break;
               }
             }
 

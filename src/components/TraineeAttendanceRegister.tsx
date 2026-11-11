@@ -80,11 +80,13 @@ export default function TraineeAttendanceRegister({
     { label: formatPillDate(todayIso, true), value: todayIso },
     { label: formatPillDate(yesterdayDate), value: yesterdayDate },
     { label: formatPillDate(dayBeforeYesterday), value: dayBeforeYesterday },
+    { label: '06 Nov', value: '2026-11-06' },
     { label: '05 Nov', value: '2026-11-05' },
     { label: '26 Oct', value: '2026-10-26' },
   ].filter((v, idx, arr) => arr.findIndex((t) => t.value === v.value) === idx);
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [liveScanning, setLiveScanning] = useState(false);
   const [graceMinutes, setGraceMinutes] = useState<15 | 20>(15);
   const [selectedForNotice, setSelectedForNotice] = useState<any | null>(null);
   const [showTeamsModal, setShowTeamsModal] = useState(false);
@@ -114,21 +116,26 @@ export default function TraineeAttendanceRegister({
     return () => clearInterval(timer);
   }, []);
 
-  const fetchAttendance = useCallback(async () => {
-    setLoading(true);
+  const fetchAttendance = useCallback(async (isLiveScan = false) => {
+    if (isLiveScan) setLiveScanning(true);
+    else setLoading(true);
     try {
-      const res = await fetch(`/api/attendance?date=${selectedDate}&batch=${activeBatch}&grace=${graceMinutes}`);
+      const res = await fetch(`/api/attendance?date=${selectedDate}&batch=${activeBatch}&grace=${graceMinutes}${isLiveScan ? '&force=true&live=true' : ''}`);
       if (res.ok) {
         const data = await res.json();
         setRecords(data.records || []);
         setStats(data.stats || null);
+        if (isLiveScan) {
+          toastSuccess('Teams Scanned Live!', `Detected ${data.stats?.onTime + data.stats?.gracePeriod || 0} active logins from Teams for Batch ${activeBatch}.`);
+        }
       }
     } catch {
       toastError('Network Error', 'Could not load attendance registry.');
     } finally {
       setLoading(false);
+      setLiveScanning(false);
     }
-  }, [selectedDate, activeBatch, graceMinutes]);
+  }, [selectedDate, activeBatch, graceMinutes, toastSuccess, toastError]);
 
   useEffect(() => {
     fetchAttendance();
@@ -410,8 +417,33 @@ export default function TraineeAttendanceRegister({
           </button>
 
           <button
-            onClick={fetchAttendance}
-            disabled={loading}
+            onClick={() => fetchAttendance(true)}
+            disabled={liveScanning || loading}
+            type="button"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              padding: '6px 14px',
+              borderRadius: 8,
+              background: 'linear-gradient(135deg, #0284c7, #0369a1)',
+              border: '1px solid rgba(56, 189, 248, 0.4)',
+              color: '#ffffff',
+              fontSize: 12,
+              fontWeight: 700,
+              cursor: 'pointer',
+              boxShadow: '0 2px 10px rgba(2, 132, 199, 0.35)',
+              transition: 'all 0.15s ease',
+            }}
+            title="Perform live LevelDB scan of local Microsoft Teams client for real morning roll call"
+          >
+            <Sparkles size={14} className={liveScanning ? 'spin' : ''} />
+            <span>{liveScanning ? 'Scanning Teams...' : '⚡ Live Scan Teams'}</span>
+          </button>
+
+          <button
+            onClick={() => fetchAttendance(false)}
+            disabled={loading || liveScanning}
             className="btn btn-secondary btn-sm"
             style={{ fontSize: 11, gap: 5 }}
           >
@@ -816,8 +848,8 @@ export default function TraineeAttendanceRegister({
         isOpen={showTeamsModal}
         onClose={() => setShowTeamsModal(false)}
         batchNumber={activeBatch}
-        date={date}
-        onAttendanceUpdated={fetchAttendance}
+        date={selectedDate}
+        onAttendanceUpdated={() => fetchAttendance(true)}
       />
     </div>
   );

@@ -2480,7 +2480,7 @@ export default function DailyTrackerView({ trackers = [], onRefresh }: { tracker
 
   useEffect(() => {
     if (selectedSheetDate && selectedSheetDate !== 'weekly-task-allocation') {
-      fetch(`/api/teams?action=scan-attendance&batch=${selectedBatch}&date=${selectedSheetDate}`)
+      fetch(`/api/teams?action=scan-attendance&batch=${selectedBatch}&date=${selectedSheetDate}&force=true`)
         .then((r) => r.json())
         .then((data) => {
           if (data.success) {
@@ -2490,6 +2490,20 @@ export default function DailyTrackerView({ trackers = [], onRefresh }: { tracker
         .catch(() => {});
     }
   }, [selectedSheetDate, selectedBatch]);
+
+  const handleLiveRescanTeams = () => {
+    if (!selectedSheetDate || selectedSheetDate === 'weekly-task-allocation') return;
+    fetch(`/api/teams?action=scan-attendance&batch=${selectedBatch}&date=${selectedSheetDate}&force=true`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.success) {
+          setTeamsDaySummary(data);
+          handleApplyTeamsAttendance(data.scannedPunches);
+          toastSuccess('Teams Rescanned Live!', `Detected ${data.punchedCount}/${data.totalTrainees} logged in from Microsoft Teams.`);
+        }
+      })
+      .catch(() => {});
+  };
 
 
 
@@ -4736,6 +4750,28 @@ export default function DailyTrackerView({ trackers = [], onRefresh }: { tracker
             </div>
 
             <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <button
+                type="button"
+                onClick={handleLiveRescanTeams}
+                style={{
+                  background: 'linear-gradient(135deg, #0284c7, #0369a1)',
+                  border: 'none',
+                  color: '#ffffff',
+                  borderRadius: 6,
+                  padding: '4px 12px',
+                  fontSize: 11,
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 5,
+                  boxShadow: '0 2px 8px rgba(2, 132, 199, 0.3)',
+                }}
+                title="Directly re-scan local Microsoft Teams LevelDB files for live punches"
+              >
+                <Sparkles size={12} />
+                <span>⚡ Rescan Teams</span>
+              </button>
               <button
                 type="button"
                 onClick={() => {

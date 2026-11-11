@@ -9,6 +9,8 @@ import {
   markAbsenceNoticeSent,
   calculateMinutesFrom9AM,
 } from '@/lib/attendance-store';
+import { scanLocalTeamsDatabase } from '@/lib/teams-live-scanner';
+import { saveTeamsScanForDate } from '@/lib/teams-service';
 
 export async function GET(req: NextRequest) {
   try {
@@ -17,26 +19,68 @@ export async function GET(req: NextRequest) {
     const dateParam = searchParams.get('date') || todayStr;
     const batchParam = searchParams.get('batch') || '3';
     const graceParam = parseInt(searchParams.get('grace') || '15', 10);
+    const forceLive = searchParams.get('force') === 'true' || searchParams.get('live') === 'true';
+
+    // ⚡ Real-Time Teams Scan: Dynamically scan local Teams IndexedDB
+    let livePunches: any[] = [];
+    try {
+      livePunches = scanLocalTeamsDatabase(dateParam, batchParam, graceParam);
+      if (livePunches && livePunches.length > 0) {
+        saveTeamsScanForDate(batchParam, dateParam, livePunches.map(p => ({
+          traineeId: p.traineeId,
+          traineeName: p.traineeName,
+          traineeEmail: p.traineeEmail,
+          batchNumber: p.batchNumber,
+          loginTime: p.loginTime,
+          goodMorningSent: p.goodMorningSent,
+          status: p.status,
+          minutesLate: p.minutesLate,
+          messageText: p.messageText,
+          detectedAt: p.detectedAt,
+        })));
+      }
+    } catch (scanErr: any) {
+      console.warn('[Attendance API] Teams live scan warning:', scanErr?.message);
+    }
 
     let records: any[] = [];
 
-    if (isMongoConfigured()) {
-      try {
-        await connectToDatabase();
-        const dbRecords = await Attendance.find({
-          date: dateParam,
-          batchNumber: batchParam,
-        }).lean();
-        if (dbRecords && dbRecords.length > 0) {
-          records = dbRecords;
+    // Map genuine live scan results if available
+    if (livePunches && livePunches.length > 0) {
+      records = livePunches.map(p => ({
+        _id: p.traineeId,
+        traineeId: p.traineeId,
+        traineeName: p.traineeName,
+        traineeEmail: p.traineeEmail,
+        batchNumber: p.batchNumber,
+        date: dateParam,
+        loginTime: p.loginTime || '',
+        logoutTime: '',
+        status: p.status,
+        goodMorningSent: p.goodMorningSent,
+        absenceNoticeSent: false,
+        minutesLate: p.minutesLate,
+        remarks: p.messageText || (p.status === 'absent' ? 'No Good Morning message received in Teams.' : 'Logged in via Teams.'),
+      }));
+    } else {
+      if (isMongoConfigured()) {
+        try {
+          await connectToDatabase();
+          const dbRecords = await Attendance.find({
+            date: dateParam,
+            batchNumber: batchParam,
+          }).lean();
+          if (dbRecords && dbRecords.length > 0) {
+            records = dbRecords;
+          }
+        } catch (err) {
+          console.warn('Attendance MongoDB lookup failed, falling back to local:', err);
         }
-      } catch (err) {
-        console.warn('Attendance MongoDB lookup failed, falling back to local:', err);
       }
-    }
 
-    if (records.length === 0) {
-      records = getOrCreateAttendanceForDate(dateParam, batchParam);
+      if (records.length === 0) {
+        records = getOrCreateAttendanceForDate(dateParam, batchParam);
+      }
     }
 
     // Compute live punctuality & absence stats
