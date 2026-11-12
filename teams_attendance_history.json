@@ -680,7 +680,7 @@
       "channel": "NYB Technical Group - III",
       "date": "2026-11-06",
       "displayDate": "06-11-2026",
-      "scannedAt": "2026-11-10T04:08:31.670Z",
+      "scannedAt": "2026-11-12T04:19:53.308Z",
       "punchedCount": 6,
       "totalTrainees": 6,
       "onTimeCount": 4,
@@ -1223,6 +1223,190 @@
           "minutesLate": 0,
           "messageText": "Good Morning Team",
           "detectedAt": "8:59:57 am"
+        }
+      ]
+    }
+  },
+  "2026-11-12": {
+    "3": {
+      "channel": "NYB Technical Group - III",
+      "date": "2026-11-12",
+      "displayDate": "12-11-2026",
+      "scannedAt": "2026-11-12T04:17:18.916Z",
+      "punchedCount": 4,
+      "totalTrainees": 6,
+      "onTimeCount": 2,
+      "graceCount": 2,
+      "absentCount": 2,
+      "punches": [
+        {
+          "traineeId": "b3_trainee_tejeswar",
+          "traineeName": "Tejeswar Rao",
+          "traineeEmail": "tejeswar.rao@nybinfotech.com",
+          "batchNumber": "3",
+          "loginTime": "09:02 AM",
+          "goodMorningSent": true,
+          "status": "grace-period",
+          "minutesLate": 2,
+          "messageText": "Good Morning Team",
+          "detectedAt": "9:02:32 am"
+        },
+        {
+          "traineeId": "b3_trainee_althaf",
+          "traineeName": "Althaf Syed",
+          "traineeEmail": "althaf.syed@nybinfotech.com",
+          "batchNumber": "3",
+          "loginTime": "",
+          "goodMorningSent": false,
+          "status": "absent",
+          "minutesLate": 0,
+          "messageText": "No message detected in NYB Technical Group - III by cutoff.",
+          "detectedAt": "Unreachable / Away"
+        },
+        {
+          "traineeId": "b3_trainee_girish",
+          "traineeName": "Girish C",
+          "traineeEmail": "girish.c@nybinfotech.com",
+          "batchNumber": "3",
+          "loginTime": "09:00 AM",
+          "goodMorningSent": true,
+          "status": "on-time",
+          "minutesLate": 0,
+          "messageText": "Good Morning Team",
+          "detectedAt": "9:00:57 am"
+        },
+        {
+          "traineeId": "b3_trainee_chandra",
+          "traineeName": "Chandra Shekar K",
+          "traineeEmail": "chandra.shekar.k@nybinfotech.com",
+          "batchNumber": "3",
+          "loginTime": "09:00 AM",
+          "goodMorningSent": true,
+          "status": "on-time",
+          "minutesLate": 0,
+          "messageText": "Good Morning Team",
+          "detectedAt": "9:00:35 am"
+        },
+        {
+          "traineeId": "b3_trainee_bala",
+          "traineeName": "Bala Krishna Parimi",
+          "traineeEmail": "bala.krishna.parimi@nybinfotech.com",
+          "batchNumber": "3",
+          "loginTime": "",
+          "goodMorningSent": false,
+          "status": "absent",
+          "minutesLate": 0,
+          "messageText": "No message detected in NYB Technical Group - III by cutoff.",
+          "detectedAt": "Unreachable / Away"
+        },
+        {
+          "traineeId": "b3_trainee_sana",
+          "traineeName": "Sana Sulthana",
+          "traineeEmail": "sana.sulthana@nybinfotech.com",
+          "batchNumber": "3",
+          "loginTime": "09:01 AM",
+          "goodMorningSent": true,
+          "status": "grace-period",
+          "minutesLate": 1,
+          "messageText": "Good Morning Team",
+          "detectedAt": "9:01:46 am"
+        }
+      ]
+    },
+    "4": {
+      "channel": "NYB Technical Group - IV",
+      "date": "2026-11-12",
+      "displayDate": "12-11-2026",
+      "scannedAt": "2026-11-12T04:17:18.655Z",
+      "punchedCount": 5,
+      "totalTrainees": 7,
+      "onTimeCount": 0,
+      "graceCount": 5,
+      "absentCount": 2,
+      "punches": [
+        {
+          "traineeId": "b4_trainee_jose",
+          "traineeName": "Jose Amala Kishor",
+          "traineeEmail": "jose.amala.kishor@nybinfotech.com",
+          "batchNumber": "4",
+          "loginTime": "09:02 AM",
+          "goodMorningSent": true,
+          "status": "grace-period",
+          "minutesLate": 2,
+          "messageText": "Good morning Team",
+          "detectedAt": "9:02:55 am"
+        },
+        {
+          "traineeId": "b4_trainee_ramesh",
+          "traineeName": "Ramesh Kumar A",
+          "traineeEmail": "ramesh.kumar.a@nybinfotech.com",
+          "batchNumber": "4",
+          "loginTime": "09:02 AM",
+          "goodMorningSent": true,
+          "status": "grace-period",
+          "minutesLate": 2,
+          "messageText": "Good Morning Team",
+          "detectedAt": "9:02:55 am"
+        },
+        {
+          "traineeId": "b4_trainee_sruthi",
+          "traineeName": "Sruthi Badavath",
+          "traineeEmail": "sruthi.badavath@nybinfotech.com",
+          "batchNumber": "4",
+          "loginTime": "",
+          "goodMorningSent": false,
+          "status": "absent",
+          "minutesLate": 0,
+          "messageText": "No message detected in NYB Technical Group - IV by cutoff.",
+          "detectedAt": "Unreachable / Away"
+        },
+        {
+          "traineeId": "b4_trainee_adithya",
+          "traineeName": "Adithya Ram",
+          "traineeEmail": "adithya.ram@nybinfotech.com",
+          "batchNumber": "4",
+          "loginTime": "09:02 AM",
+          "goodMorningSent": true,
+          "status": "grace-period",
+          "minutesLate": 2,
+          "messageText": "Good Morning Team",
+          "detectedAt": "9:02:55 am"
+        },
+        {
+          "traineeId": "b4_trainee_nikhil",
+          "traineeName": "Nikhil Kumar Kurapati",
+          "traineeEmail": "nikhil.kumar.kurapati@nybinfotech.com",
+          "batchNumber": "4",
+          "loginTime": "09:02 AM",
+          "goodMorningSent": true,
+          "status": "grace-period",
+          "minutesLate": 2,
+          "messageText": "Good Morning Team",
+          "detectedAt": "9:02:55 am"
+        },
+        {
+          "traineeId": "b4_trainee_adinarayana",
+          "traineeName": "Adinarayana Meesala",
+          "traineeEmail": "adinarayana.meesala@nybinfotech.com",
+          "batchNumber": "4",
+          "loginTime": "",
+          "goodMorningSent": false,
+          "status": "absent",
+          "minutesLate": 0,
+          "messageText": "No message detected in NYB Technical Group - IV by cutoff.",
+          "detectedAt": "Unreachable / Away"
+        },
+        {
+          "traineeId": "b4_trainee_snehith",
+          "traineeName": "Snehith Reddy Challa",
+          "traineeEmail": "snehith.reddy.challa@nybinfotech.com",
+          "batchNumber": "4",
+          "loginTime": "09:02 AM",
+          "goodMorningSent": true,
+          "status": "grace-period",
+          "minutesLate": 2,
+          "messageText": "Good Morning Team",
+          "detectedAt": "9:02:55 am"
         }
       ]
     }
